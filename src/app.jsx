@@ -10,11 +10,29 @@ var Modal = ReactBootstrap.Modal;
 
 var ContactBrowserApp = React.createClass({
     getInitialState: function () {
-        return {token: null, count: 0, data: [], url: null, params: {}, page: 1, busy: false, error: {}};
+        return {
+            token: null,
+            count: 0,
+            data: [],
+            url: null,
+            params: {},
+            page: 1,
+            busy: false,
+            error: {}
+        };
     },
     displayError: function (url, method, xhr, status, err) {
         console.log(url, status, err);
-        this.setState({busy: false, error: {url: url, xhr: xhr, status: status, err: err, method: method}});
+        this.setState({
+            busy: false,
+            error: {
+                url: url,
+                xhr: xhr,
+                status: status,
+                err: err,
+                method: method
+            }
+        });
     },
     loadData: function () {
         this.setState({busy: true});
