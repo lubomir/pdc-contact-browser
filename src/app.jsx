@@ -6,10 +6,15 @@ var Button = ReactBootstrap.Button;
 var Row = ReactBootstrap.Row;
 var Col = ReactBootstrap.Col;
 var Pagination = ReactBootstrap.Pagination;
+var Modal = ReactBootstrap.Modal;
 
 var ContactBrowserApp = React.createClass({
     getInitialState: function () {
-        return {token: null, count: 0, data: [], url: null, params: {}, page: 1, busy: false};
+        return {token: null, count: 0, data: [], url: null, params: {}, page: 1, busy: false, error: {}};
+    },
+    displayError: function (url, method, xhr, status, err) {
+        console.log(url, status, err);
+        this.setState({busy: false, error: {url: url, xhr: xhr, status: status, err: err, method: method}});
     },
     loadData: function () {
         this.setState({busy: true});
@@ -27,8 +32,7 @@ var ContactBrowserApp = React.createClass({
                               prev: response.prev});
             }.bind(this),
             error: function (xhr, status, err) {
-                this.setState({busy: false});
-                console.log(this.props.url, status, err);
+                this.displayError(this.state.url, 'GET', xhr, status, err);
             }.bind(this)
         });
     },
@@ -57,10 +61,12 @@ var ContactBrowserApp = React.createClass({
             method: "DELETE",
             success: this.loadData,
             failure: function (xhr, status, err) {
-                this.setState({busy: false});
-                console.log(url, status, err);
+                this.displayError(url, 'DELETE', xhr, status, err);
             }.bind(this)
         })
+    },
+    clearError: function () {
+        this.setState({error: {}});
     },
     render: function () {
         return (
@@ -70,7 +76,42 @@ var ContactBrowserApp = React.createClass({
                 <Browser data={this.state.data} onDelete={this.handleDelete} />
                 <Pager count={this.state.count} page={this.state.page} onPageChange={this.handlePageChange} />
                 <Spinner enabled={this.state.busy} />
+                <NetworkError onClose={this.clearError} data={this.state.error} />
             </div>
+        );
+    }
+});
+
+var NetworkError = React.createClass({
+    handleClose: function () {
+        this.props.onClose();
+    },
+    render: function () {
+        if (Object.keys(this.props.data).length == 0) {
+            return <div />;
+        }
+        var title = "Error: " + this.props.data.xhr.status + " " + this.props.data.err;
+        var resp = <span />;
+        if (this.props.data.xhr.responseJSON) {
+            resp = (
+                <div>
+                    <p>The response was:</p>
+                    <pre>{JSON.stringify(this.props.data.xhr.responseJSON, null, 2)}</pre>
+                </div>
+            );
+        }
+        return (
+            <Modal
+                title={title}
+                onRequestHide={this.handleClose}>
+                <div className="modal-body">
+                    <p><b>{this.props.data.method}</b> <code>{this.props.data.url}</code></p>
+                    {resp}
+                </div>
+                <div className='modal-footer'>
+                    <Button onClick={this.handleClose}>Close</Button>
+                </div>
+            </Modal>
         );
     }
 });

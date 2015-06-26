@@ -1,6 +1,11 @@
 h2 button {
     margin-left: 2em;
 }
+.modal-header {
+    background-color: #F2DEDE;
+    color: #A94442;
+    border-radius: 6px 6px 0 0;
+}
 .count-text {
     padding: 6px 12px;
     margin: 20px 0;
