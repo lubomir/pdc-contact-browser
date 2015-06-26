@@ -94,13 +94,13 @@ var ContactBrowserApp = React.createClass({
                 <Browser data={this.state.data} onDelete={this.handleDelete} />
                 <Pager count={this.state.count} page={this.state.page} onPageChange={this.handlePageChange} />
                 <Spinner enabled={this.state.busy} />
-                <NetworkError onClose={this.clearError} data={this.state.error} />
+                <NetworkErrorDialog onClose={this.clearError} data={this.state.error} />
             </div>
         );
     }
 });
 
-var NetworkError = React.createClass({
+var NetworkErrorDialog = React.createClass({
     handleClose: function () {
         this.props.onClose();
     },
@@ -121,6 +121,7 @@ var NetworkError = React.createClass({
         return (
             <Modal
                 title={title}
+                className="error-dialog"
                 onRequestHide={this.handleClose}>
                 <div className="modal-body">
                     <p><b>{this.props.data.method}</b> <code>{this.props.data.url}</code></p>
