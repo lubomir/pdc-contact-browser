@@ -249,7 +249,7 @@ var LoadForm = React.createClass({
                         </div>
                         <div className="form-group">
                             <Col smOffset={2} sm={10}>
-                                <button type="submit" className="btn btn-default">Load components</button>
+                                <Button type="submit">Load components</Button>
                             </Col>
                         </div>
                     </form>
