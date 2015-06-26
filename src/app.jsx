@@ -7,6 +7,7 @@ var Row = ReactBootstrap.Row;
 var Col = ReactBootstrap.Col;
 var Pagination = ReactBootstrap.Pagination;
 var Modal = ReactBootstrap.Modal;
+var Input = ReactBootstrap.Input;
 
 var ContactBrowserApp = React.createClass({
     getInitialState: function () {
@@ -18,7 +19,8 @@ var ContactBrowserApp = React.createClass({
             params: {},
             page: 1,
             busy: false,
-            error: {}
+            error: {},
+            createFor: null,
         };
     },
     displayError: function (url, method, xhr, status, err) {
@@ -37,7 +39,7 @@ var ContactBrowserApp = React.createClass({
     loadData: function () {
         this.setState({busy: true});
         var data = JSON.parse(JSON.stringify(this.state.params));
-        data['page'] = this.state.page;
+        data["page"] = this.state.page;
         $.ajax({
             url: this.state.url,
             dataType: "json",
@@ -78,7 +80,7 @@ var ContactBrowserApp = React.createClass({
             url: url,
             method: "DELETE",
             success: this.loadData,
-            failure: function (xhr, status, err) {
+            error: function (xhr, status, err) {
                 this.displayError(url, 'DELETE', xhr, status, err);
             }.bind(this)
         })
@@ -86,15 +88,44 @@ var ContactBrowserApp = React.createClass({
     clearError: function () {
         this.setState({error: {}});
     },
+    handleCreateStart: function (component) {
+        this.setState({createFor: component});
+    },
+    handleContactSubmit: function (data) {
+        var createFor = this.state.createFor;
+        this.setState({busy: true, createFor: null}, function () {
+            $.ajax({
+                url: createFor.url + "contacts/",
+                method: "POST",
+                data: JSON.stringify(data),
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                success: function (response) {
+                    this.loadData();
+                }.bind(this),
+                error: function (xhr, status, err) {
+                    this.displayError(createFor.url, "POST", xhr, status, err);
+                }.bind(this)
+            });
+        });
+    },
+    clearCreate: function () {
+        this.setState({createFor: null});
+    },
     render: function () {
         return (
             <div className="container-fluid">
                 <LoadForm onSubmit={this.handleFormSubmit} />
                 <Pager count={this.state.count} page={this.state.page} onPageChange={this.handlePageChange} />
-                <Browser data={this.state.data} onDelete={this.handleDelete} />
+                <Browser data={this.state.data} onDelete={this.handleDelete} onCreate={this.handleCreateStart} />
                 <Pager count={this.state.count} page={this.state.page} onPageChange={this.handlePageChange} />
                 <Spinner enabled={this.state.busy} />
                 <NetworkErrorDialog onClose={this.clearError} data={this.state.error} />
+                <ContactForm
+                    onSubmit={this.handleContactSubmit}
+                    createFor={this.state.createFor}
+                    onClose={this.clearCreate} />
             </div>
         );
     }
@@ -131,6 +162,77 @@ var NetworkErrorDialog = React.createClass({
                     <Button onClick={this.handleClose}>Close</Button>
                 </div>
             </Modal>
+        );
+    }
+});
+
+var ContactForm = React.createClass({
+    getInitialState: function () {
+        return {type: 'person'};
+    },
+    handleSubmit: function (e) {
+        e.preventDefault();
+        var data = {
+            "contact_role": this.refs.role.getValue(),
+            "contact": {
+                "email": this.refs.email.getValue()
+            }
+        };
+        if (this.refs.person.getChecked()) {
+            data["contact"]["username"] = this.refs.username.getValue();
+        } else {
+            data["contact"]["mailname"] = this.refs.mailname.getValue();
+        }
+        this.props.onSubmit(data);
+    },
+    handleCancel: function () {
+        this.props.onClose();
+    },
+    handleTypeChange: function (event) {
+        this.setState({type: event.target.value});
+    },
+    render: function () {
+        if (!this.props.createFor) {
+            return <div />;
+        }
+        var name = null;
+        if ('release' in this.props.createFor) {
+            name = this.props.createFor.release.release_id + "/" + this.props.createFor.name;
+        } else {
+            name = this.props.createFor.name;
+        }
+        var title = "Create new contact for " + name;
+        return (
+            <form onSubmit={this.handleSubmit}>
+                <Modal
+                    title={title}
+                    bsSize="large"
+                    onRequestHide={this.handleCancel}>
+                    <div className="modal-body">
+                        <Input type="text" ref="role" label="Role" required />
+                        <Input type="email" ref="email" label="E-mail" required />
+                        <Row>
+                            <Col md={6}>
+                                <Input type='radio' name="type" value="person" ref="person" label='Person'
+                                    defaultChecked onChange={this.handleTypeChange} />
+                                <Input type='text' ref="username" label='Username' required
+                                    disabled={this.state.type != "person"} />
+                            </Col>
+                            <Col md={6}>
+                                <Input type='radio' name="type" value="maillist" ref="maillist"
+                                    label='Mailing list'
+                                    onChange={this.handleTypeChange} />
+                                <Input type='text' ref="mailname" label='Mailing list name' required
+                                    disabled={this.state.type != "maillist"} />
+                            </Col>
+                        </Row>
+                    </div>
+                    <div className="modal-footer">
+                        <Button bsStyle="link" onClick={this.handleCancel}>Close</Button>
+                        <Button bsStyle="primary" type="submit">Create</Button>
+                    </div>
+                </Modal>
+            </form>
         );
     }
 });
@@ -263,9 +365,16 @@ var Browser = React.createClass({
     handleDelete: function (url) {
         this.props.onDelete(url);
     },
+    handleCreate: function (component) {
+        this.props.onCreate(component);
+    },
     render: function () {
         var components = this.props.data.map(function (c) {
-            return <ComponentView key={c.url} data={c} onDelete={this.handleDelete} foo="bar" />;
+            return (
+                <ComponentView key={c.url} data={c}
+                    onDelete={this.handleDelete}
+                    onCreate={this.handleCreate} />
+            );
         }.bind(this));
         return (
             <div>
@@ -279,6 +388,9 @@ var ComponentView = React.createClass({
     handleDelete: function (url) {
         this.props.onDelete(url);
     },
+    handleCreate: function (e) {
+        this.props.onCreate(this.props.data);
+    },
     render: function () {
         var contacts = this.props.data.contacts.map(function (c) {
             return (<ContactView key={c.url} data={c} onDelete={this.handleDelete} />);
@@ -291,7 +403,7 @@ var ComponentView = React.createClass({
             <div>
                 <h2>
                     {name}
-                    <Button><Glyphicon glyph="pencil" /> Create</Button>
+                    <Button onClick={this.handleCreate}><Glyphicon glyph="pencil" /> Create</Button>
                 </h2>
                 <table className="table">
                     <thead>
