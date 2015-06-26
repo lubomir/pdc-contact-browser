@@ -444,14 +444,9 @@ var ContactView = React.createClass({
                 <td><p className="form-control-static">{this.props.data.contact.email}</p></td>
                 <td><p className="form-control-static">{this.props.data.contact_role}</p></td>
                 <td>
-                    <ButtonGroup>
-                        <Button title="Edit">
-                            <Glyphicon glyph="edit" />
-                        </Button>
-                        <Button title="Delete" onClick={this.handleDelete}>
-                            <Glyphicon glyph="trash" />
-                        </Button>
-                    </ButtonGroup>
+                    <Button title="Delete" onClick={this.handleDelete}>
+                        <Glyphicon glyph="trash" />
+                    </Button>
                 </td>
             </tr>
         );
