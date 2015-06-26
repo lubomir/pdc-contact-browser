@@ -1,5 +1,12 @@
 var PAGE_SIZE = 20;
 
+var Glyphicon = ReactBootstrap.Glyphicon;
+var ButtonGroup = ReactBootstrap.ButtonGroup;
+var Button = ReactBootstrap.Button;
+var Row = ReactBootstrap.Row;
+var Col = ReactBootstrap.Col;
+var Pagination = ReactBootstrap.Pagination;
+
 var ContactBrowserApp = React.createClass({
     getInitialState: function () {
         return {token: null, count: 0, data: [], url: null, params: {}, page: 1, busy: false};
@@ -83,33 +90,27 @@ var Spinner = React.createClass({
 });
 
 var Pager = React.createClass({
-    handlePageChange: function (p) {
-        this.props.onPageChange(p);
+    handlePageChange: function (event, selectedEvent) {
+        event.preventDefault()
+        this.props.onPageChange(selectedEvent.eventKey);
     },
     render: function () {
         if (this.props.count == 0) {
             return <div />;
         }
         var n_pages = Math.ceil(this.props.count / PAGE_SIZE);
-        var buttons = [];
-        for (var p = 1; p <= n_pages; p++) {
-            if (this.props.page == p) {
-                buttons.push(<li key={p} className="active"><a href="#">{p}</a></li>);
-            } else {
-                buttons.push(<li key={p}><a href="#" onClick={this.handlePageChange.bind(this, p)}>{p}</a></li>);
-            }
-        }
         return (
-            <div className="row">
-                <div className="col-md-6">
+            <Row>
+                <Col md={6}>
                     <p className="count-text">{this.props.count} components</p>
-                </div>
-                <nav className="col-md-6 text-right">
-                    <ul className="pagination">
-                        {buttons}
-                    </ul>
-                </nav>
-            </div>
+                </Col>
+                <Col md={6} className="text-right">
+                    <Pagination
+                        items={n_pages}
+                        active_page={this.props.page}
+                        onSelect={this.handlePageChange} />
+                </Col>
+            </Row>
         );
     }
 });
@@ -139,14 +140,14 @@ var LoadForm = React.createClass({
     render: function () {
         var disabled = this.state.globalComponents ? "disabled" : "";
         return (
-            <div className="row loadForm">
-                <div className="col-md-8 col-md-offset-2">
+            <Row className="loadForm">
+                <Col md={8} mdOffset={2}>
                     <form className="form-horizontal" onSubmit={this.handleSubmit}>
                         <div className="form-group">
                             <label htmlFor="token" className="col-sm-2 control-label">Token*</label>
-                            <div className="col-sm-10">
+                            <Col sm={10}>
                                 <input type="text" className="form-control" id="token" ref="token" required="required" />
-                            </div>
+                            </Col>
                         </div>
                         <div className="form-group">
                             <label htmlFor="email" className="col-sm-2 control-label">E-mail</label>
@@ -156,12 +157,12 @@ var LoadForm = React.createClass({
                         </div>
                         <div className="form-group">
                             <label htmlFor="name" className="col-sm-2 control-label">Component Name</label>
-                            <div className="col-sm-10">
+                            <Col sm={10}>
                                 <input type="text" className="form-control" id="name" ref="name" />
-                            </div>
+                            </Col>
                         </div>
                         <div className="form-group">
-                            <div className="col-sm-offset-2 col-sm-10">
+                            <Col smOffset={2} sm={10}>
                                 <label className="radio-inline">
                                     <input type="radio" name="type" id="global" ref="global"
                                         defaultChecked="true" onChange={this.handleTypeToggle} />
@@ -172,11 +173,11 @@ var LoadForm = React.createClass({
                                         onChange={this.handleTypeToggle} />
                                     Release Components
                                 </label>
-                            </div>
+                            </Col>
                         </div>
                         <div className="form-group">
                             <label htmlFor="release_id" className="col-sm-2 control-label">Release</label>
-                            <div className="col-sm-10">
+                            <Col sm={10}>
                                 <input type="text" className="form-control" id="release_id" ref="release_id"
                                     aria-describedby="helpBlock"
                                     disabled={disabled} />
@@ -184,16 +185,16 @@ var LoadForm = React.createClass({
                                     Only display components from this release. If left empty, all releases
                                     will be processed.
                                 </span>
-                            </div>
+                            </Col>
                         </div>
                         <div className="form-group">
-                            <div className="col-sm-offset-2 col-sm-10">
+                            <Col smOffset={2} sm={10}>
                                 <button type="submit" className="btn btn-default">Load components</button>
-                            </div>
+                            </Col>
                         </div>
                     </form>
-                </div>
-            </div>
+                </Col>
+            </Row>
         );
     }
 });
@@ -230,9 +231,7 @@ var ComponentView = React.createClass({
             <div>
                 <h2>
                     {name}
-                    <button type="button" className="btn btn-default">
-                        <span className="glyphicon glyphicon-pencil" aria-hidden="true"></span> Create
-                    </button>
+                    <Button><Glyphicon glyph="pencil" /> Create</Button>
                 </h2>
                 <table className="table">
                     <thead>
@@ -261,7 +260,7 @@ var ContactView = React.createClass({
     render: function () {
         var inherited = <span />
         if ("inherited" in this.props.data && this.props.data.inherited) {
-            inherited = <span className="glyphicon glyphicon-link" title="Inherited from global component" />;
+            inherited = <Glyphicon glyph="link" title="Inherited from global component" />;
         }
         var name = "username" in this.props.data.contact
             ? this.props.data.contact.username
@@ -273,15 +272,14 @@ var ContactView = React.createClass({
                 <td><p className="form-control-static">{this.props.data.contact.email}</p></td>
                 <td><p className="form-control-static">{this.props.data.contact_role}</p></td>
                 <td>
-                    <div className="btn-group">
-                        <button type="button" className="btn btn-default" title="Edit">
-                            <span className="glyphicon glyphicon-edit" aria-hidden="true"></span>
-                        </button>
-                        <button type="button" className="btn btn-default" title="Delete"
-                            onClick={this.handleDelete}>
-                            <span className="glyphicon glyphicon-trash" aria-hidden="true"></span>
-                        </button>
-                    </div>
+                    <ButtonGroup>
+                        <Button title="Edit">
+                            <Glyphicon glyph="edit" />
+                        </Button>
+                        <Button title="Delete" onClick={this.handleDelete}>
+                            <Glyphicon glyph="trash" />
+                        </Button>
+                    </ButtonGroup>
                 </td>
             </tr>
         );
