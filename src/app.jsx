@@ -21,6 +21,7 @@ var ContactBrowserApp = React.createClass({
             busy: false,
             error: {},
             createFor: null,
+            servers: [],
         };
     },
     displayError: function (url, method, xhr, status, err) {
@@ -57,7 +58,8 @@ var ContactBrowserApp = React.createClass({
         });
     },
     handleFormSubmit: function (data) {
-        var url = this.props.url + data['type'] + "/";
+        var serverDetails = this.refs.serverChooser.getServerDetail(data['server']);
+        var url = serverDetails['url'] + data['type'] + "/";
         var params = {};
         if (data['email']) {
             params['email'] = data['email'];
@@ -113,10 +115,14 @@ var ContactBrowserApp = React.createClass({
     clearCreate: function () {
         this.setState({createFor: null});
     },
+    handleServerChange: function (servers) {
+        this.setState({servers: servers});
+    },
     render: function () {
         return (
             <div className="container-fluid">
-                <LoadForm onSubmit={this.handleFormSubmit} />
+                <ServerChooser ref="serverChooser" onServerChange={this.handleServerChange} />
+                <LoadForm onSubmit={this.handleFormSubmit} servers={this.state.servers} />
                 <Pager count={this.state.count} page={this.state.page} onPageChange={this.handlePageChange} />
                 <Browser data={this.state.data} onDelete={this.handleDelete} onCreate={this.handleCreateStart} />
                 <Pager count={this.state.count} page={this.state.page} onPageChange={this.handlePageChange} />
@@ -127,6 +133,131 @@ var ContactBrowserApp = React.createClass({
                     createFor={this.state.createFor}
                     onClose={this.clearCreate} />
             </div>
+        );
+    }
+});
+
+var ServerChooser = React.createClass({
+    getServerNames: function () {
+        return Object.keys(this.state.servers).sort();
+    },
+    getServerDetail: function (name) {
+        return this.state.servers[name];
+    },
+    getInitialState: function () {
+        var servers = localStorage['pdc.servers'];
+        servers = servers ? JSON.parse(servers) : {};
+        this.props.onServerChange(Object.keys(servers).sort());
+        return {visible: false, servers: servers};
+    },
+    handleVisibilityToggle: function () {
+        this.setState({visible: !this.state.visible});
+    },
+    handleUpdate: function (oldName, newName, data) {
+        var servers = this.state.servers;
+        if (oldName && oldName in servers) {
+            delete servers[oldName];
+        }
+        if (newName) {
+            servers[newName] = data;
+        }
+        this.props.onServerChange(Object.keys(servers).sort());
+        localStorage['pdc.servers'] = JSON.stringify(servers);
+        this.setState({servers: servers});
+    },
+    render: function () {
+        var dialog = null;
+        if (this.state.visible) {
+            var servers = [];
+            var names = this.getServerNames();
+            for (idx in names) {
+                var server = names[idx]
+                servers.push(
+                    <ServerSettings key={server}
+                        name={server} data={this.state.servers[server]}
+                        onChange={this.handleUpdate} />
+                );
+            }
+            servers.push(<ServerSettings key="empty" data={{}} onChange={this.handleUpdate} />);
+            dialog = (
+                <Modal title="Server Setup"
+                    onRequestHide={this.handleVisibilityToggle}>
+                    <div className="modal-body">
+                        {servers}
+                    </div>
+                    <div className='modal-footer'>
+                        <Button onClick={this.handleVisibilityToggle}>Close</Button>
+                    </div>
+                </Modal>
+            );
+        }
+        return (
+            <div className="server-chooser-btn">
+                <Button bsSize="large" bsStyle="link"
+                    onClick={this.handleVisibilityToggle}>
+                    <Glyphicon glyph="cog"/>
+                </Button>
+                {dialog}
+            </div>
+        );
+    }
+});
+
+var ServerSettings = React.createClass({
+    handleSave: function (e) {
+        e.preventDefault();
+        var data = {
+            url: React.findDOMNode(this.refs.url).value,
+            token: React.findDOMNode(this.refs.token).value
+        };
+        this.props.onChange(this.props.name, React.findDOMNode(this.refs.name).value, data);
+        e.target.reset();
+    },
+    handleDelete: function (e) {
+        e.preventDefault();
+        this.props.onChange(this.props.name, null, null);
+    },
+    render: function () {
+        var delBtn = <span />;
+        if (this.props.name) {
+            delBtn = <Button title="Delete" onClick={this.handleDelete}>
+                <Glyphicon glyph="trash" />
+            </Button>;
+        }
+        return (
+            <form className="server-settings-row" onSubmit={this.handleSave}>
+                <Row>
+                    <Col sm={10}>
+                        <Row>
+                            <Col sm={4}>
+                                <input className="form-control" type="text" placeholder="Server name"
+                                    defaultValue={this.props.name} ref='name'
+                                    onBlur={this.handleBlur} />
+                            </Col>
+                            <Col sm={8}>
+                                <input className="form-control" type="url" placeholder="URL"
+                                    defaultValue={this.props.data['url']} ref='url'
+                                    onBlur={this.handleBlur} />
+                            </Col>
+                        </Row>
+                        <Row>
+                            <Col sm={12}>
+                                <input className="form-control" type="text" placeholder="Token"
+                                    defaultValue={this.props.data['token']} ref='token'
+                                    onBlur={this.handleBlur} />
+                            </Col>
+                        </Row>
+                    </Col>
+                    <Col sm={2}>
+                        <div className="btn-group-vertical">
+                            <Button title="Save" type="Submit">
+                                <Glyphicon glyph="save" />
+                            </Button>
+                            {delBtn}
+                        </div>
+                    </Col>
+                </Row>
+            </form>
         );
     }
 });
@@ -288,27 +419,32 @@ var LoadForm = React.createClass({
     handleSubmit: function (e) {
         e.preventDefault();
         var data = {
-            'token': React.findDOMNode(this.refs.token).value,
+            'server': React.findDOMNode(this.refs.server).value,
             'email': React.findDOMNode(this.refs.email).value,
             'name': React.findDOMNode(this.refs.name).value,
             'type': React.findDOMNode(this.refs.global).checked ? 'global-components' : 'release-components',
             'release_id': React.findDOMNode(this.refs.release_id).value
         };
-        if (!data['token']) {
+        if (!data['server']) {
             return;
         }
         this.props.onSubmit(data);
     },
     render: function () {
         var disabled = this.state.globalComponents ? "disabled" : "";
+        var opts = this.props.servers.map(function (val) {
+            return <option key={val}>{val}</option>;
+        });
         return (
             <Row className="loadForm">
                 <Col md={8} mdOffset={2}>
                     <form className="form-horizontal" onSubmit={this.handleSubmit}>
                         <div className="form-group">
-                            <label htmlFor="token" className="col-sm-2 control-label">Token*</label>
+                            <label htmlFor="server" className="col-sm-2 control-label">Server</label>
                             <Col sm={10}>
-                                <input type="text" className="form-control" id="token" ref="token" required="required" />
+                                <select className="form-control" id="server" ref="server" required="required">
+                                    {opts}
+                                </select>
                             </Col>
                         </div>
                         <div className="form-group">
