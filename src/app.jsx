@@ -319,8 +319,10 @@ var ContactForm = React.createClass({
     handleCancel: function () {
         this.props.onClose();
     },
-    handleTypeChange: function (event) {
-        this.setState({type: event.target.value});
+    handleTypeChange: function (focus, event) {
+        this.setState({type: event.target.value}, function () {
+            this.refs[focus].getInputDOMNode().focus();
+        });
     },
     render: function () {
         if (!this.props.createFor) {
@@ -345,14 +347,14 @@ var ContactForm = React.createClass({
                         <Row>
                             <Col md={6}>
                                 <Input type='radio' name="type" value="person" ref="person" label='Person'
-                                    defaultChecked onChange={this.handleTypeChange} />
+                                    defaultChecked onChange={this.handleTypeChange.bind(this, "username")} />
                                 <Input type='text' ref="username" label='Username' required
                                     disabled={this.state.type != "person"} />
                             </Col>
                             <Col md={6}>
                                 <Input type='radio' name="type" value="maillist" ref="maillist"
                                     label='Mailing list'
-                                    onChange={this.handleTypeChange} />
+                                    onChange={this.handleTypeChange.bind(this, "mailname")} />
                                 <Input type='text' ref="mailname" label='Mailing list name' required
                                     disabled={this.state.type != "maillist"} />
                             </Col>
