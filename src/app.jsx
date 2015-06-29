@@ -269,7 +269,7 @@ var Pager = React.createClass({
                 <Col md={6} className="text-right">
                     <Pagination
                         items={n_pages}
-                        active_page={this.props.page}
+                        activePage={this.props.page}
                         onSelect={this.handlePageChange} />
                 </Col>
             </Row>
