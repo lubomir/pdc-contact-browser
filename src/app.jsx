@@ -18,7 +18,6 @@ var Input = ReactBootstrap.Input;
 var ContactBrowserApp = React.createClass({
     getInitialState: function () {
         return {
-            token: null,
             count: 0,
             data: [],
             url: null,
@@ -76,7 +75,14 @@ var ContactBrowserApp = React.createClass({
         if (data['type'] == 'release' && data['release_id']) {
             params['release'] = data['release_id'];
         }
-        this.setState({token: data['token'], url: url, params: params, page: 1},
+        if (serverDetails['token']) {
+            $.ajaxSetup({
+                beforeSend: function (xhr, settings) {
+                    xhr.setRequestHeader('Authorization', 'Token ' + serverDetails['token']);
+                }
+            });
+        }
+        this.setState({url: url, params: params, page: 1},
                       this.loadData);
     },
     handlePageChange: function (p) {
