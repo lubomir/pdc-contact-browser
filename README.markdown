@@ -23,3 +23,6 @@ Install `npm` (probably from your package manager).
 
     $ make dist
     # create single file version in dist/index.html
+
+If you did not install node module globally, you need to add
+`node_modules/.bin` to your `PATH`.
