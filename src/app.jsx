@@ -4,6 +4,7 @@ var PAGE_SIZE = 20;
 
 var React = require('react');
 var ReactBootstrap = require('react-bootstrap');
+var $ = require('jquery');
 
 var Glyphicon = ReactBootstrap.Glyphicon;
 var ButtonGroup = ReactBootstrap.ButtonGroup;
