@@ -176,7 +176,7 @@ var ServerChooser = React.createClass({
         if (this.state.visible) {
             var servers = [];
             var names = this.getServerNames();
-            for (idx in names) {
+            for (var idx in names) {
                 var server = names[idx]
                 servers.push(
                     <ServerSettings key={server}
