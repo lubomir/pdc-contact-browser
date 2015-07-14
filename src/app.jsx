@@ -72,7 +72,7 @@ var ContactBrowserApp = React.createClass({
         if (data['name']) {
             params['name'] = data['name'];
         }
-        if (data['type'] == 'release' && data['release_id']) {
+        if (data['type'] == 'release-components' && data['release_id']) {
             params['release'] = data['release_id'];
         }
         if (serverDetails['token']) {
