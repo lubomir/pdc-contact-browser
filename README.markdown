@@ -1,12 +1,12 @@
-This is example client for [PDC] that provides somewhat comfortable to view and
-edit contacts for components.
+This is example client for [PDC] that provides somewhat comfortable to view
+contacts for components.
 
 [PDC]: https://github.com/release-engineering/product-definition-center
 
 
 # Usage
 
-Hit the cog buggon in the top right corner, set up your servers and enjoy.
+Set up your server and token in src/serversetting.json, then enjoy.
 
 
 # Development

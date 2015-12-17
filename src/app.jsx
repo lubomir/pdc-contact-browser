@@ -6,27 +6,65 @@ var React = require('react');
 var ReactBootstrap = require('react-bootstrap');
 var $ = require('jquery');
 
-var Glyphicon = ReactBootstrap.Glyphicon;
-var ButtonGroup = ReactBootstrap.ButtonGroup;
 var Button = ReactBootstrap.Button;
 var Row = ReactBootstrap.Row;
 var Col = ReactBootstrap.Col;
 var Pagination = ReactBootstrap.Pagination;
 var Modal = ReactBootstrap.Modal;
-var Input = ReactBootstrap.Input;
+var Setting = require('./serversetting.json');
+var Url = Setting.server;
+var Token = Setting.token;
 
 var ContactBrowserApp = React.createClass({
     getInitialState: function () {
+        $.ajaxSetup({
+            beforeSend: function (xhr, settings) {
+                xhr.setRequestHeader('Authorization', 'Token ' + Token);
+            }
+        });
+        var releases = ['all', 'global']
+        var contacts = ['all']
+	$.ajax({
+            url: Url + "releases/",
+            dataType: "json",
+            method: "GET",
+            success: function (response) {
+                for (var idx in response.results) {
+                    releases.push(response.results[idx].release_id)
+		}
+                this.setState({busy: false,
+                              releases: releases});
+	    }.bind(this),
+            error: function (xhr, status, err) {
+                this.displayError(Url + "releases/", 'GET', xhr, status, err);
+            }.bind(this)
+        });
+	$.ajax({
+            url: Url+ "contact-roles/",
+            dataType: "json",
+            method: "GET",
+            success: function (response) {
+                for (var idx in response.results) {
+                    contacts.push(response.results[idx].name)
+		}
+                this.setState({busy: false,
+                              contacts: contacts});
+            }.bind(this),
+            error: function (xhr, status, err) {
+                this.displayError(Url + "contact-roles/", 'GET', xhr, status, err);
+            }.bind(this)
+        });
         return {
             count: 0,
             data: [],
-            url: null,
+            url: Url,
             params: {},
             page: 1,
             busy: false,
             error: {},
-            createFor: null,
-            servers: [],
+            showresult: false,
+            releases: releases,
+            contacts: contacts,
         };
     },
     displayError: function (url, method, xhr, status, err) {
@@ -41,6 +79,28 @@ var ContactBrowserApp = React.createClass({
                 method: method
             }
         });
+    },
+    handleFormSubmit: function (data) {
+        var params = {};
+        var url = null;
+        if (data['release']=='global') {
+            url = this.state.url + 'global-component-contacts/'
+        }
+        else {
+            url = this.state.url + 'release-component-contacts/'
+            if(data['release']!='all') {
+                params['release'] = data['release'];
+            }
+        }
+        if (data['component']) {
+            params['component'] = data['component'];
+        }
+        if (data['contact']!='all') {
+            params['role'] = data['contact'];
+        }
+
+        this.setState({url: url, params: params, page: 1, showresult: true},
+                      this.loadData);
     },
     loadData: function () {
         this.setState({busy: true});
@@ -62,214 +122,25 @@ var ContactBrowserApp = React.createClass({
             }.bind(this)
         });
     },
-    handleFormSubmit: function (data) {
-        var serverDetails = this.refs.serverChooser.getServerDetail(data['server']);
-        var url = serverDetails['url'] + data['type'] + "/";
-        var params = {};
-        if (data['email']) {
-            params['email'] = data['email'];
-        }
-        if (data['name']) {
-            params['name'] = data['name'];
-        }
-        if (data['type'] == 'release-components' && data['release_id']) {
-            params['release'] = data['release_id'];
-        }
-        if (serverDetails['token']) {
-            $.ajaxSetup({
-                beforeSend: function (xhr, settings) {
-                    xhr.setRequestHeader('Authorization', 'Token ' + serverDetails['token']);
-                }
-            });
-        }
-        this.setState({url: url, params: params, page: 1},
-                      this.loadData);
-    },
     handlePageChange: function (p) {
         this.setState({page: p}, this.loadData);
     },
-    handleDelete: function (url) {
-        this.setState({busy: true});
-        $.ajax({
-            url: url,
-            method: "DELETE",
-            success: this.loadData,
-            error: function (xhr, status, err) {
-                this.displayError(url, 'DELETE', xhr, status, err);
-            }.bind(this)
-        })
+    handleInputChange: function (p) {
+        this.setState({url: Url});
     },
     clearError: function () {
         this.setState({error: {}});
     },
-    handleCreateStart: function (component) {
-        this.setState({createFor: component});
-    },
-    handleContactSubmit: function (data) {
-        var createFor = this.state.createFor;
-        this.setState({busy: true, createFor: null}, function () {
-            $.ajax({
-                url: createFor.url + "contacts/",
-                method: "POST",
-                data: JSON.stringify(data),
-                headers: {
-                    "Content-Type": "application/json",
-                },
-                success: function (response) {
-                    this.loadData();
-                }.bind(this),
-                error: function (xhr, status, err) {
-                    this.displayError(createFor.url, "POST", xhr, status, err);
-                }.bind(this)
-            });
-        });
-    },
-    clearCreate: function () {
-        this.setState({createFor: null});
-    },
-    handleServerChange: function (servers) {
-        this.setState({servers: servers});
-    },
     render: function () {
         return (
             <div className="container-fluid">
-                <ServerChooser ref="serverChooser" onServerChange={this.handleServerChange} />
-                <LoadForm onSubmit={this.handleFormSubmit} servers={this.state.servers} />
+                <LoadForm releases={this.state.releases} contacts={this.state.contacts} onSubmit={this.handleFormSubmit} inputChange={this.handleInputChange}/>
                 <Pager count={this.state.count} page={this.state.page} onPageChange={this.handlePageChange} />
-                <Browser data={this.state.data} onDelete={this.handleDelete} onCreate={this.handleCreateStart} />
+                <Browser data={this.state.data}  showresult={this.state.showresult} />
                 <Pager count={this.state.count} page={this.state.page} onPageChange={this.handlePageChange} />
                 <Spinner enabled={this.state.busy} />
                 <NetworkErrorDialog onClose={this.clearError} data={this.state.error} />
-                <ContactForm
-                    onSubmit={this.handleContactSubmit}
-                    createFor={this.state.createFor}
-                    onClose={this.clearCreate} />
             </div>
-        );
-    }
-});
-
-var ServerChooser = React.createClass({
-    getServerNames: function () {
-        return Object.keys(this.state.servers).sort();
-    },
-    getServerDetail: function (name) {
-        return this.state.servers[name];
-    },
-    getInitialState: function () {
-        var servers = localStorage['pdc.servers'];
-        servers = servers ? JSON.parse(servers) : {};
-        this.props.onServerChange(Object.keys(servers).sort());
-        return {visible: false, servers: servers};
-    },
-    handleVisibilityToggle: function () {
-        this.setState({visible: !this.state.visible});
-    },
-    handleUpdate: function (oldName, newName, data) {
-        var servers = this.state.servers;
-        if (oldName && oldName in servers) {
-            delete servers[oldName];
-        }
-        if (newName) {
-            servers[newName] = data;
-        }
-        this.props.onServerChange(Object.keys(servers).sort());
-        localStorage['pdc.servers'] = JSON.stringify(servers);
-        this.setState({servers: servers});
-    },
-    render: function () {
-        var dialog = null;
-        if (this.state.visible) {
-            var servers = [];
-            var names = this.getServerNames();
-            for (var idx in names) {
-                var server = names[idx]
-                servers.push(
-                    <ServerSettings key={server}
-                        name={server} data={this.state.servers[server]}
-                        onChange={this.handleUpdate} />
-                );
-            }
-            servers.push(<ServerSettings key="empty" data={{}} onChange={this.handleUpdate} />);
-            dialog = (
-                <Modal title="Server Setup"
-                    onRequestHide={this.handleVisibilityToggle}>
-                    <div className="modal-body">
-                        {servers}
-                    </div>
-                    <div className='modal-footer'>
-                        <Button onClick={this.handleVisibilityToggle}>Close</Button>
-                    </div>
-                </Modal>
-            );
-        }
-        return (
-            <div className="server-chooser-btn">
-                <Button bsSize="large" bsStyle="link"
-                    onClick={this.handleVisibilityToggle}>
-                    <Glyphicon glyph="cog"/>
-                </Button>
-                {dialog}
-            </div>
-        );
-    }
-});
-
-var ServerSettings = React.createClass({
-    handleSave: function (e) {
-        e.preventDefault();
-        var data = {
-            url: React.findDOMNode(this.refs.url).value,
-            token: React.findDOMNode(this.refs.token).value
-        };
-        this.props.onChange(this.props.name, React.findDOMNode(this.refs.name).value, data);
-        e.target.reset();
-    },
-    handleDelete: function (e) {
-        e.preventDefault();
-        this.props.onChange(this.props.name, null, null);
-    },
-    render: function () {
-        var delBtn = <span />;
-        if (this.props.name) {
-            delBtn = <Button title="Delete" onClick={this.handleDelete}>
-                <Glyphicon glyph="trash" />
-            </Button>;
-        }
-        return (
-            <form className="server-settings-row" onSubmit={this.handleSave}>
-                <Row>
-                    <Col sm={10}>
-                        <Row>
-                            <Col sm={4}>
-                                <input className="form-control" type="text" placeholder="Server name"
-                                    defaultValue={this.props.name} ref='name'
-                                    onBlur={this.handleBlur} />
-                            </Col>
-                            <Col sm={8}>
-                                <input className="form-control" type="url" placeholder="URL"
-                                    defaultValue={this.props.data['url']} ref='url'
-                                    onBlur={this.handleBlur} />
-                            </Col>
-                        </Row>
-                        <Row>
-                            <Col sm={12}>
-                                <input className="form-control" type="text" placeholder="Token"
-                                    defaultValue={this.props.data['token']} ref='token'
-                                    onBlur={this.handleBlur} />
-                            </Col>
-                        </Row>
-                    </Col>
-                    <Col sm={2}>
-                        <div className="btn-group-vertical">
-                            <Button title="Save" type="Submit">
-                                <Glyphicon glyph="save" />
-                            </Button>
-                            {delBtn}
-                        </div>
-                    </Col>
-                </Row>
-            </form>
         );
     }
 });
@@ -305,79 +176,6 @@ var NetworkErrorDialog = React.createClass({
                     <Button onClick={this.handleClose}>Close</Button>
                 </div>
             </Modal>
-        );
-    }
-});
-
-var ContactForm = React.createClass({
-    getInitialState: function () {
-        return {type: 'person'};
-    },
-    handleSubmit: function (e) {
-        e.preventDefault();
-        var data = {
-            "contact_role": this.refs.role.getValue(),
-            "contact": {
-                "email": this.refs.email.getValue()
-            }
-        };
-        if (this.refs.person.getChecked()) {
-            data["contact"]["username"] = this.refs.username.getValue();
-        } else {
-            data["contact"]["mailname"] = this.refs.mailname.getValue();
-        }
-        this.props.onSubmit(data);
-    },
-    handleCancel: function () {
-        this.props.onClose();
-    },
-    handleTypeChange: function (focus, event) {
-        this.setState({type: event.target.value}, function () {
-            this.refs[focus].getInputDOMNode().focus();
-        });
-    },
-    render: function () {
-        if (!this.props.createFor) {
-            return <div />;
-        }
-        var name = null;
-        if ('release' in this.props.createFor) {
-            name = this.props.createFor.release.release_id + "/" + this.props.createFor.name;
-        } else {
-            name = this.props.createFor.name;
-        }
-        var title = "Create new contact for " + name;
-        return (
-            <form onSubmit={this.handleSubmit}>
-                <Modal
-                    title={title}
-                    bsSize="large"
-                    onRequestHide={this.handleCancel}>
-                    <div className="modal-body">
-                        <Input type="text" ref="role" label="Role" required />
-                        <Input type="email" ref="email" label="E-mail" required />
-                        <Row>
-                            <Col md={6}>
-                                <Input type='radio' name="type" value="person" ref="person" label='Person'
-                                    defaultChecked onChange={this.handleTypeChange.bind(this, "username")} />
-                                <Input type='text' ref="username" label='Username' required
-                                    disabled={this.state.type != "person"} />
-                            </Col>
-                            <Col md={6}>
-                                <Input type='radio' name="type" value="maillist" ref="maillist"
-                                    label='Mailing list'
-                                    onChange={this.handleTypeChange.bind(this, "mailname")} />
-                                <Input type='text' ref="mailname" label='Mailing list name' required
-                                    disabled={this.state.type != "maillist"} />
-                            </Col>
-                        </Row>
-                    </div>
-                    <div className="modal-footer">
-                        <Button bsStyle="link" onClick={this.handleCancel}>Close</Button>
-                        <Button bsStyle="primary" type="submit">Create</Button>
-                    </div>
-                </Modal>
-            </form>
         );
     }
 });
@@ -423,85 +221,64 @@ var Pager = React.createClass({
 });
 
 var LoadForm = React.createClass({
-    getInitialState: function () {
-        return {globalComponents: true};
-    },
-    handleTypeToggle: function (e) {
-        React.findDOMNode(this.refs.release_id).value = '';
-        this.setState({globalComponents: e.target.id == "global"});
-    },
     handleSubmit: function (e) {
         e.preventDefault();
         var data = {
-            'server': React.findDOMNode(this.refs.server).value,
-            'email': React.findDOMNode(this.refs.email).value,
-            'name': React.findDOMNode(this.refs.name).value,
-            'type': React.findDOMNode(this.refs.global).checked ? 'global-components' : 'release-components',
-            'release_id': React.findDOMNode(this.refs.release_id).value
+            'component': React.findDOMNode(this.refs.component).value,
+            'release': React.findDOMNode(this.refs.release).value,
+            'contact': React.findDOMNode(this.refs.contact).value
         };
-        if (!data['server']) {
-            return;
-        }
         this.props.onSubmit(data);
     },
+    handleComponentChange: function (component) {
+        this.setState({component: component});
+        this.props.inputChange();
+    },
+    handleReleaseChange: function (release) {
+        this.setState({release: release});
+        this.props.inputChange();
+    },
+    handleContactChange: function (contact) {
+        this.setState({contact: contact});
+        this.props.inputChange();
+    },
     render: function () {
-        var disabled = this.state.globalComponents ? "disabled" : "";
-        var opts = this.props.servers.map(function (val) {
+        var releases = this.props.releases.map(function (val) {
+            return <option key={val}>{val}</option>;
+        });
+        var contacts = this.props.contacts.map(function (val) {
             return <option key={val}>{val}</option>;
         });
         return (
             <Row className="loadForm">
-                <Col md={8} mdOffset={2}>
+                <Col md={10} >
+                    <h2 className="text-center">Contact Browser</h2>
                     <form className="form-horizontal" onSubmit={this.handleSubmit}>
                         <div className="form-group">
-                            <label htmlFor="server" className="col-sm-2 control-label">Server</label>
-                            <Col sm={10}>
-                                <select className="form-control" id="server" ref="server" required="required">
-                                    {opts}
+                            <label htmlFor="component" className="col-sm-4 control-label">Component:</label>
+                            <div className="col-sm-4">
+                                <input type="text" className="form-control" id="component" ref="component" onChange={this.handleComponentChange}/>
+                            </div>
+                        </div>
+                        <div className="form-group">
+                            <label htmlFor="release" className="col-sm-4 control-label">Release:</label>
+                            <Col sm={4} >
+                                <select className="form-control" id="release" ref="release" required="required" onChange={this.handleReleaseChange}>
+                                   {releases}
                                 </select>
                             </Col>
                         </div>
                         <div className="form-group">
-                            <label htmlFor="email" className="col-sm-2 control-label">E-mail</label>
-                            <div className="col-sm-10">
-                                <input type="email" className="form-control" id="email" ref="email" />
-                            </div>
-                        </div>
-                        <div className="form-group">
-                            <label htmlFor="name" className="col-sm-2 control-label">Component Name</label>
-                            <Col sm={10}>
-                                <input type="text" className="form-control" id="name" ref="name" />
+                            <label htmlFor="contact" className="col-sm-4 control-label">Contact:</label>
+                            <Col sm={4} >
+                                <select className="form-control" id="contact" ref="contact" required="required" onChange={this.handleContactChange} >
+                                   {contacts}
+                                </select>
                             </Col>
                         </div>
                         <div className="form-group">
-                            <Col smOffset={2} sm={10}>
-                                <label className="radio-inline">
-                                    <input type="radio" name="type" id="global" ref="global"
-                                        defaultChecked="true" onChange={this.handleTypeToggle} />
-                                    Global Components
-                                </label>
-                                <label className="radio-inline">
-                                    <input type="radio" name="type" id="release"
-                                        onChange={this.handleTypeToggle} />
-                                    Release Components
-                                </label>
-                            </Col>
-                        </div>
-                        <div className="form-group">
-                            <label htmlFor="release_id" className="col-sm-2 control-label">Release</label>
-                            <Col sm={10}>
-                                <input type="text" className="form-control" id="release_id" ref="release_id"
-                                    aria-describedby="helpBlock"
-                                    disabled={disabled} />
-                                <span id="helpBlock" className="help-block">
-                                    Only display components from this release. If left empty, all releases
-                                    will be processed.
-                                </span>
-                            </Col>
-                        </div>
-                        <div className="form-group">
-                            <Col smOffset={2} sm={10}>
-                                <Button type="submit">Load components</Button>
+                            <Col sm={8} smOffset={2} className="text-center">
+                                <Button type="submit">Search</Button>
                             </Col>
                         </div>
                     </form>
@@ -512,98 +289,64 @@ var LoadForm = React.createClass({
 });
 
 var Browser = React.createClass({
-    handleDelete: function (url) {
-        this.props.onDelete(url);
-    },
-    handleCreate: function (component) {
-        this.props.onCreate(component);
-    },
     render: function () {
-        var components = this.props.data.map(function (c) {
-            return (
-                <ComponentView key={c.url} data={c}
-                    onDelete={this.handleDelete}
-                    onCreate={this.handleCreate} />
-            );
-        }.bind(this));
-        return (
-            <div>
-                {components}
-            </div>
-        );
-    }
-});
-
-var ComponentView = React.createClass({
-    handleDelete: function (url) {
-        this.props.onDelete(url);
-    },
-    handleCreate: function (e) {
-        this.props.onCreate(this.props.data);
-    },
-    render: function () {
-        var contacts = this.props.data.contacts.map(function (c) {
-            return (<ContactView key={c.url} data={c} onDelete={this.handleDelete} />);
-        }.bind(this));
-        var name = this.props.data.name;
-        if ("release" in this.props.data) {
-            name = this.props.data.release.release_id + "/" + this.props.data.name;
+        if (!this.props.showresult) {
+            return <div />;
         }
+        var contacts = (this.props.data || []).map(function (c) {
+            var release = null;
+            var component = null;
+            if (c.component.release) {
+                release = c.component.release;
+                component = c.component.name;
+            }
+            else {
+                release = "N/A";
+                component = c.component;
+            }
+            return (<ContactView key={c.url} data={c} component={component} release={release} />);
+        }.bind(this));
         return (
+            <form className="form-horizontal" >
             <div>
-                <h2>
-                    {name}
-                    <Button onClick={this.handleCreate}><Glyphicon glyph="pencil" /> Create</Button>
-                </h2>
-                <table className="table">
-                    <thead>
-                        <tr>
-                            <th></th>
-                            <th>Name</th>
-                            <th>E-mail</th>
-                            <th>Role</th>
-                            <th></th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {contacts}
-                    </tbody>
-                </table>
+                <Col md={8} mdOffset={3}>
+                    <h3> Results </h3>
+                </Col>
+                <Col md={8} mdOffset={3}>
+                    <table className="table-striped">
+                        <thead>
+                            <tr>
+                                <th className="text-center">Component</th>
+                                <th className="text-center">Release</th>
+                                <th className="text-center">Email</th>
+                                <th className="text-center">Contact</th>
+                            </tr>
+                        </thead>
+                        <tbody className="text-center">
+                            {contacts}
+                        </tbody>
+                    </table>
+                </Col>
             </div>
+            </form>
         );
     }
 });
 
 var ContactView = React.createClass({
-    handleDelete: function (e) {
-        e.preventDefault();
-        this.props.onDelete(this.props.data.url);
-    },
     render: function () {
-        var inherited = <span />
-        if ("inherited" in this.props.data && this.props.data.inherited) {
-            inherited = <Glyphicon glyph="link" title="Inherited from global component" />;
-        }
-        var name = "username" in this.props.data.contact
-            ? this.props.data.contact.username
-            : this.props.data.contact.mail_name;
         return (
             <tr>
-                <td><p className="form-control-static text-center">{inherited}</p></td>
-                <td><p className="form-control-static">{name}</p></td>
+                <td><p className="form-control-static">{this.props.component}</p></td>
+                <td><p className="form-control-static">{this.props.release}</p></td>
                 <td><p className="form-control-static">{this.props.data.contact.email}</p></td>
-                <td><p className="form-control-static">{this.props.data.contact_role}</p></td>
-                <td>
-                    <Button title="Delete" onClick={this.handleDelete}>
-                        <Glyphicon glyph="trash" />
-                    </Button>
-                </td>
+                <td><p className="form-control-static">{this.props.data.role}</p></td>
             </tr>
         );
     }
 });
 
 React.render(
-    <ContactBrowserApp url="http://localhost:8000/rest_api/v1/" />,
+    <ContactBrowserApp />,
     document.getElementById('app')
 );
