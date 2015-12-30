@@ -11,49 +11,11 @@ var Row = ReactBootstrap.Row;
 var Col = ReactBootstrap.Col;
 var Pagination = ReactBootstrap.Pagination;
 var Modal = ReactBootstrap.Modal;
-var Setting = require('./serversetting.json');
-var Url = Setting.server;
-var Token = Setting.token;
+var Url = "https://pdc.engineering.redhat.com/rest_api/v1/";
 
 var ContactBrowserApp = React.createClass({
     getInitialState: function () {
-        $.ajaxSetup({
-            beforeSend: function (xhr, settings) {
-                xhr.setRequestHeader('Authorization', 'Token ' + Token);
-            }
-        });
-        var releases = ['all', 'global']
-        var contacts = ['all']
-	$.ajax({
-            url: Url + "releases/",
-            dataType: "json",
-            method: "GET",
-            success: function (response) {
-                for (var idx in response.results) {
-                    releases.push(response.results[idx].release_id)
-		}
-                this.setState({busy: false,
-                              releases: releases});
-	    }.bind(this),
-            error: function (xhr, status, err) {
-                this.displayError(Url + "releases/", 'GET', xhr, status, err);
-            }.bind(this)
-        });
-	$.ajax({
-            url: Url+ "contact-roles/",
-            dataType: "json",
-            method: "GET",
-            success: function (response) {
-                for (var idx in response.results) {
-                    contacts.push(response.results[idx].name)
-		}
-                this.setState({busy: false,
-                              contacts: contacts});
-            }.bind(this),
-            error: function (xhr, status, err) {
-                this.displayError(Url + "contact-roles/", 'GET', xhr, status, err);
-            }.bind(this)
-        });
+        this.getToken(this.getInitialData);
         return {
             count: 0,
             data: [],
@@ -63,9 +25,69 @@ var ContactBrowserApp = React.createClass({
             busy: false,
             error: {},
             showresult: false,
-            releases: releases,
-            contacts: contacts,
+            releases: [],
+            contacts: [],
         };
+    },
+    getToken: function (getInitialData) {
+        document.addEventListener("DOMContentLoaded", function () {
+        var url = Url + 'auth/token/obtain/';
+        var x = new XMLHttpRequest();
+        x.open('GET', url, true);
+        x.withCredentials = true;
+        x.setRequestHeader('Accept', 'application/json');
+        x.addEventListener("load", function () {
+            var data = JSON.parse(x.response);
+            getInitialData(data.token);
+        });
+        x.addEventListener("error", function () {
+            document.write('Authorization Required');
+        });
+        x.send();
+        });
+    },
+    getInitialData: function (token) {
+        $.ajaxSetup({
+            beforeSend: function (xhr) {
+                xhr.setRequestHeader('Authorization', 'Token ' + token);
+            }
+        });
+        var releases = ['all', 'global'];
+        var contacts = ['all'];
+        var param = {};
+        param["page_size"] = -1;
+        $.ajax({
+            url: Url + "releases/",
+            dataType: "json",
+            data: param,
+            method: "GET",
+            success: function (response) {
+                for (var idx in response) {
+                    releases.push(response[idx].release_id)
+               }
+                this.setState({busy: false,
+                              releases: releases});
+           }.bind(this),
+            error: function (xhr, status, err) {
+                this.displayError(Url + "releases/", 'GET', xhr, status, err);
+            }.bind(this)
+        });
+        $.ajax({
+            url: Url + "contact-roles/",
+            dataType: "json",
+            data: param,
+            method: "GET",
+            success: function (response) {
+                for (var idx in response) {
+                    contacts.push(response[idx].name);
+                }
+                this.setState({busy: false,
+                              contacts: contacts});
+            }.bind(this),
+            error: function (xhr, status, err) {
+                this.displayError(Url + "contact-roles/", 'GET', xhr, status, err);
+            }.bind(this)
+        });
     },
     displayError: function (url, method, xhr, status, err) {
         console.log(url, status, err);
@@ -83,22 +105,21 @@ var ContactBrowserApp = React.createClass({
     handleFormSubmit: function (data) {
         var params = {};
         var url = null;
-        if (data['release']=='global') {
-            url = this.state.url + 'global-component-contacts/'
+        if (data['release'] == 'global') {
+            url = this.state.url + 'global-component-contacts/';
         }
         else {
-            url = this.state.url + 'release-component-contacts/'
-            if(data['release']!='all') {
+            url = this.state.url + 'release-component-contacts/';
+            if(data['release'] != 'all') {
                 params['release'] = data['release'];
             }
         }
         if (data['component']) {
             params['component'] = data['component'];
         }
-        if (data['contact']!='all') {
+        if (data['contact'] != 'all') {
             params['role'] = data['contact'];
         }
-
         this.setState({url: url, params: params, page: 1, showresult: true},
                       this.loadData);
     },
@@ -125,7 +146,7 @@ var ContactBrowserApp = React.createClass({
     handlePageChange: function (p) {
         this.setState({page: p}, this.loadData);
     },
-    handleInputChange: function (p) {
+    handleInputChange: function () {
         this.setState({url: Url});
     },
     clearError: function () {
@@ -230,16 +251,7 @@ var LoadForm = React.createClass({
         };
         this.props.onSubmit(data);
     },
-    handleComponentChange: function (component) {
-        this.setState({component: component});
-        this.props.inputChange();
-    },
-    handleReleaseChange: function (release) {
-        this.setState({release: release});
-        this.props.inputChange();
-    },
-    handleContactChange: function (contact) {
-        this.setState({contact: contact});
+    handleInputChange: function () {
         this.props.inputChange();
     },
     render: function () {
@@ -257,13 +269,13 @@ var LoadForm = React.createClass({
                         <div className="form-group">
                             <label htmlFor="component" className="col-sm-4 control-label">Component:</label>
                             <div className="col-sm-4">
-                                <input type="text" className="form-control" id="component" ref="component" onChange={this.handleComponentChange}/>
+                                <input type="text" className="form-control" id="component" ref="component" onChange={this.handleInputChange}/>
                             </div>
                         </div>
                         <div className="form-group">
                             <label htmlFor="release" className="col-sm-4 control-label">Release:</label>
                             <Col sm={4} >
-                                <select className="form-control" id="release" ref="release" required="required" onChange={this.handleReleaseChange}>
+                                <select className="form-control" id="release" ref="release" required="required" onChange={this.handleInputChange}>
                                    {releases}
                                 </select>
                             </Col>
@@ -271,7 +283,7 @@ var LoadForm = React.createClass({
                         <div className="form-group">
                             <label htmlFor="contact" className="col-sm-4 control-label">Contact:</label>
                             <Col sm={4} >
-                                <select className="form-control" id="contact" ref="contact" required="required" onChange={this.handleContactChange} >
+                                <select className="form-control" id="contact" ref="contact" required="required" onChange={this.handleInputChange} >
                                    {contacts}
                                 </select>
                             </Col>
@@ -293,7 +305,7 @@ var Browser = React.createClass({
         if (!this.props.showresult) {
             return <div />;
         }
-        var contacts = (this.props.data || []).map(function (c) {
+        var contacts = this.props.data.map(function (c) {
             var release = null;
             var component = null;
             if (c.component.release) {
