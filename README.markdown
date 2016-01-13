@@ -6,7 +6,7 @@ contacts for components.
 
 # Usage
 
-Set up your server and token in src/serversetting.json, then enjoy.
+Set up your server url in src/serversetting.json, then enjoy.
 
 
 # Development
@@ -26,3 +26,8 @@ Install `npm` (probably from your package manager).
 
 If you did not install node module globally, you need to add
 `node_modules/.bin` to your `PATH`.
+
+# Known issue
+
+If you met error 'Authorization Required', please open the server you configured and check if this connection is untrusted.
+If so, please add the exception in your browser.

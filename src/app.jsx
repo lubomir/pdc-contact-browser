@@ -11,7 +11,8 @@ var Row = ReactBootstrap.Row;
 var Col = ReactBootstrap.Col;
 var Pagination = ReactBootstrap.Pagination;
 var Modal = ReactBootstrap.Modal;
-var Url = "https://pdc.engineering.redhat.com/rest_api/v1/";
+var Setting = require('./serversetting.json');
+var Url = Setting.server;
 
 var ContactBrowserApp = React.createClass({
     getInitialState: function () {
@@ -245,7 +246,7 @@ var LoadForm = React.createClass({
     handleSubmit: function (e) {
         e.preventDefault();
         var data = {
-            'component': React.findDOMNode(this.refs.component).value,
+            'component': React.findDOMNode(this.refs.component).value.trim(),
             'release': React.findDOMNode(this.refs.release).value,
             'contact': React.findDOMNode(this.refs.contact).value
         };
