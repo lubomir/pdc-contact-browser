@@ -229,7 +229,7 @@ var Pager = React.createClass({
         return (
             <Row>
                 <Col md={6}>
-                    <p className="count-text">{this.props.count} components</p>
+                    <p className="count-text">{this.props.count} contacts</p>
                 </Col>
                 <Col md={6} className="text-right">
                     <Pagination
@@ -264,7 +264,7 @@ var LoadForm = React.createClass({
         });
         return (
             <Row className="loadForm">
-                <Col md={10} >
+                <Col md={10} mdOffset={1}>
                     <h2 className="text-center">Contact Browser</h2>
                     <form className="form-horizontal" onSubmit={this.handleSubmit}>
                         <div className="form-group">
@@ -282,7 +282,7 @@ var LoadForm = React.createClass({
                             </Col>
                         </div>
                         <div className="form-group">
-                            <label htmlFor="contact" className="col-sm-4 control-label">Contact:</label>
+                            <label htmlFor="contact" className="col-sm-4 control-label">Contact Role:</label>
                             <Col sm={4} >
                                 <select className="form-control" id="contact" ref="contact" required="required" onChange={this.handleInputChange} >
                                    {contacts}
@@ -322,20 +322,20 @@ var Browser = React.createClass({
         return (
             <form className="form-horizontal" >
             <div>
-                <Col md={8} mdOffset={3}>
-                    <h3> Results </h3>
+                <Col md={10} mdOffset={1}>
+                    <h3 className="text-center"> Results </h3>
                 </Col>
-                <Col md={8} mdOffset={3}>
-                    <table className="table-striped">
+                <Col md={6} mdOffset={3}>
+                    <table>
                         <thead>
                             <tr>
-                                <th className="text-center">Component</th>
-                                <th className="text-center">Release</th>
-                                <th className="text-center">Email</th>
-                                <th className="text-center">Contact</th>
+                                <th className="col-sm-1">Component</th>
+                                <th className="col-sm-1">Release</th>
+                                <th className="col-sm-1">Email</th>
+                                <th className="col-sm-1">Contact Role</th>
                             </tr>
                         </thead>
-                        <tbody className="text-center">
+                        <tbody className="text-left">
                             {contacts}
                         </tbody>
                     </table>
