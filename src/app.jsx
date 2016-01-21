@@ -23,7 +23,7 @@ var ContactBrowserApp = React.createClass({
             url: Url,
             params: {},
             page: 1,
-            busy: false,
+            busy: true,
             error: {},
             showresult: false,
             releases: [],
