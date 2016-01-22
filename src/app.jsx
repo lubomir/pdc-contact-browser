@@ -16,7 +16,13 @@ var Url = Setting.server;
 
 var ContactBrowserApp = React.createClass({
     getInitialState: function () {
-        this.getToken(this.getInitialData);
+        var token = localStorage.getItem('token');
+        if (!token) {
+            this.getToken(this.getInitialData);
+        }
+        else {
+            this.getInitialData(token);
+        }
         return {
             count: 0,
             data: [],
@@ -31,7 +37,6 @@ var ContactBrowserApp = React.createClass({
         };
     },
     getToken: function (getInitialData) {
-        document.addEventListener("DOMContentLoaded", function () {
         var url = Url + 'auth/token/obtain/';
         var x = new XMLHttpRequest();
         x.open('GET', url, true);
@@ -40,12 +45,12 @@ var ContactBrowserApp = React.createClass({
         x.addEventListener("load", function () {
             var data = JSON.parse(x.response);
             getInitialData(data.token);
+            localStorage.setItem('token', data.token);
         });
         x.addEventListener("error", function () {
             document.write('Authorization Required');
         });
         x.send();
-        });
     },
     getInitialData: function (token) {
         $.ajaxSetup({
@@ -68,9 +73,15 @@ var ContactBrowserApp = React.createClass({
                }
                 this.setState({busy: false,
                               releases: releases});
-           }.bind(this),
+            }.bind(this),
             error: function (xhr, status, err) {
-                this.displayError(Url + "releases/", 'GET', xhr, status, err);
+                if (err == "UNAUTHORIZED") {
+                    this.setState({busy: true});
+                    this.getToken(this.getInitialData);
+                }
+                else {
+                    this.displayError(Url + "releases/", 'GET', xhr, status, err);
+                }
             }.bind(this)
         });
         $.ajax({
