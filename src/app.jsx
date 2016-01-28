@@ -23,17 +23,30 @@ var ContactBrowserApp = React.createClass({
         else {
             this.getInitialData(token);
         }
+        var cached_releases = localStorage.getItem("releases");
+        var cached_roles = localStorage.getItem("roles");
+        var busy = true;
+        var releases = [];
+        var roles = [];
+        if (cached_releases && cached_roles) {
+            busy = false;
+            releases = cached_releases.split(",");
+            roles = cached_roles.split(",");
+        }
+
         return {
             count: 0,
             data: [],
             url: Url,
             params: {},
             page: 1,
-            busy: true,
+            busy: busy,
             error: {},
             showresult: false,
-            releases: [],
-            contacts: [],
+            releases: releases,
+            roles: roles,
+            release_spinning: true,
+            role_spinning: true,
         };
     },
     getToken: function (getInitialData) {
@@ -59,7 +72,7 @@ var ContactBrowserApp = React.createClass({
             }
         });
         var releases = ['all', 'global'];
-        var contacts = ['all'];
+        var roles = ['all'];
         var param = {};
         param["page_size"] = -1;
         $.ajax({
@@ -70,9 +83,12 @@ var ContactBrowserApp = React.createClass({
             success: function (response) {
                 for (var idx in response) {
                     releases.push(response[idx].release_id)
-               }
+                }
                 this.setState({busy: false,
-                              releases: releases});
+                              releases: releases,
+                              release_spinning: false});
+                localStorage.setItem('releases', releases);
+
             }.bind(this),
             error: function (xhr, status, err) {
                 if (err == "UNAUTHORIZED") {
@@ -91,10 +107,12 @@ var ContactBrowserApp = React.createClass({
             method: "GET",
             success: function (response) {
                 for (var idx in response) {
-                    contacts.push(response[idx].name);
+                    roles.push(response[idx].name);
                 }
                 this.setState({busy: false,
-                              contacts: contacts});
+                              roles: roles,
+                              role_spinning: false});
+                localStorage.setItem('roles', roles);
             }.bind(this),
             error: function (xhr, status, err) {
                 this.displayError(Url + "contact-roles/", 'GET', xhr, status, err);
@@ -129,8 +147,8 @@ var ContactBrowserApp = React.createClass({
         if (data['component']) {
             params['component'] = data['component'];
         }
-        if (data['contact'] != 'all') {
-            params['role'] = data['contact'];
+        if (data['role'] != 'all') {
+            params['role'] = data['role'];
         }
         this.setState({url: url, params: params, page: 1, showresult: true},
                       this.loadData);
@@ -167,7 +185,7 @@ var ContactBrowserApp = React.createClass({
     render: function () {
         return (
             <div className="container-fluid">
-                <LoadForm releases={this.state.releases} contacts={this.state.contacts} onSubmit={this.handleFormSubmit} inputChange={this.handleInputChange}/>
+                <LoadForm releases={this.state.releases} roles={this.state.roles} release_spinning={this.state.release_spinning} role_spinning={this.state.role_spinning} onSubmit={this.handleFormSubmit} inputChange={this.handleInputChange}/>
                 <Pager count={this.state.count} page={this.state.page} onPageChange={this.handlePageChange} />
                 <Browser data={this.state.data}  showresult={this.state.showresult} />
                 <Pager count={this.state.count} page={this.state.page} onPageChange={this.handlePageChange} />
@@ -227,6 +245,16 @@ var Spinner = React.createClass({
     }
 });
 
+var Spinner_loader = React.createClass({
+    render: function () {
+        if (this.props.enabled) {
+            return (<div className='spinner-loader'></div>);
+        } else {
+            return (<div />);
+        }
+    }
+});
+
 var Pager = React.createClass({
     handlePageChange: function (event, selectedEvent) {
         event.preventDefault()
@@ -265,7 +293,7 @@ var LoadForm = React.createClass({
         var data = {
             'component': React.findDOMNode(this.refs.component).value.trim(),
             'release': React.findDOMNode(this.refs.release).value,
-            'contact': React.findDOMNode(this.refs.contact).value
+            'role': React.findDOMNode(this.refs.role).value
         };
         this.props.onSubmit(data);
     },
@@ -276,9 +304,11 @@ var LoadForm = React.createClass({
         var releases = this.props.releases.map(function (val) {
             return <option key={val}>{val}</option>;
         });
-        var contacts = this.props.contacts.map(function (val) {
+        var roles = this.props.roles.map(function (val) {
             return <option key={val}>{val}</option>;
         });
+        var release_spinning = this.props.release_spinning;
+        var role_spinning =  this.props.role_spinning;
         return (
             <Row className="loadForm">
                 <Col md={10} mdOffset={1}>
@@ -297,14 +327,16 @@ var LoadForm = React.createClass({
                                    {releases}
                                 </select>
                             </Col>
+                            <Spinner_loader enabled={release_spinning} />
                         </div>
                         <div className="form-group">
-                            <label htmlFor="contact" className="col-sm-4 control-label">Contact Role:</label>
+                            <label htmlFor="role" className="col-sm-4 control-label">Contact Role:</label>
                             <Col sm={4} >
-                                <select className="form-control" id="contact" ref="contact" required="required" onChange={this.handleInputChange} >
-                                   {contacts}
+                                <select className="form-control" id="role" ref="role" required="required" onChange={this.handleInputChange} >
+                                   {roles}
                                 </select>
                             </Col>
+                            <Spinner_loader enabled={role_spinning} />
                         </div>
                         <div className="form-group">
                             <Col sm={8} smOffset={2} className="text-center">
