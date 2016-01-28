@@ -13,6 +13,10 @@ var Pagination = ReactBootstrap.Pagination;
 var Modal = ReactBootstrap.Modal;
 var Setting = require('./serversetting.json');
 var Url = Setting.server;
+var ReactRouter = require('react-router');
+var Router = ReactRouter.Router;
+var Route = ReactRouter.Route;
+var createHistory = require('history/lib/createHashHistory');
 
 var ContactBrowserApp = React.createClass({
     getInitialState: function () {
@@ -30,11 +34,29 @@ var ContactBrowserApp = React.createClass({
             release_spinning = true;
             role_spinning = true;
         }
+        var params = {};
+        var resource= null;
+        var location = document.location.toString();
+        var res = location.split("#");
+        var root = res[0] + "#/";
+        if (res[1]) {
+            var inputs = res[1].split("?");
+            resource = inputs[0].replace("/", "");
+            if (inputs[1]) {
+                var arrs = inputs[1].split("&");
+                for (var index in arrs) {
+                    var param_arrs = arrs[index].split("=");
+                    if (param_arrs[1]) {
+                        params[param_arrs[0]] = param_arrs[1];
+                    }
+                }
+            }
+        }
         return {
             count: 0,
             data: [],
             url: Url,
-            params: {},
+            params: params,
             page: 1,
             busy: busy,
             error: {},
@@ -43,18 +65,22 @@ var ContactBrowserApp = React.createClass({
             roles: roles,
             release_spinning: release_spinning,
             role_spinning: role_spinning,
+            root: root,
+            resource: resource,
         };
     },
     componentDidMount: function() {
-        this.loadInitialData();
-    },
-    loadInitialData: function() {
         var token = localStorage.getItem('token');
         if (!token) {
             this.getToken(this.getInitialData);
         }
         else {
             this.getInitialData(token);
+        }
+        if (this.state.resource) {
+            var url = this.state.url + this.state.resource;
+            this.setState({url: url, busy: true, release_spinning: false, role_spinning: false, showresult: true},
+                          this.loadData);
         }
     },
     getToken: function (getInitialData) {
@@ -167,10 +193,20 @@ var ContactBrowserApp = React.createClass({
         this.setState({busy: true});
         var data = JSON.parse(JSON.stringify(this.state.params));
         data["page"] = this.state.page;
+        var root = this.state.root;
         $.ajax({
             url: this.state.url,
             dataType: "json",
             data: data,
+            complete : function(response){
+                var res = this.url.replace(Url, root);
+                if (window.history.pushState) {
+                    window.history.pushState(null, "complete", res);
+                }
+                else {
+                    window.location.hash = res;
+                }
+            },
             success: function (response) {
                 this.setState({busy: false,
                               data: response.results,
@@ -419,6 +455,10 @@ var ContactView = React.createClass({
 });
 
 React.render(
-    <ContactBrowserApp />,
+    <Router history={createHistory({ queryKey: false })}>
+        <Route path="/" component={ ContactBrowserApp } />
+        <Route path="/release-component-contacts/" component={ ContactBrowserApp } />
+        <Route path="/global-component-contacts/" component={ ContactBrowserApp } />
+    </Router>,
     document.getElementById('app')
 );
