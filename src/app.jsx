@@ -16,13 +16,6 @@ var Url = Setting.server;
 
 var ContactBrowserApp = React.createClass({
     getInitialState: function () {
-        var token = localStorage.getItem('token');
-        if (!token) {
-            this.getToken(this.getInitialData);
-        }
-        else {
-            this.getInitialData(token);
-        }
         var cached_releases = localStorage.getItem("releases");
         var cached_roles = localStorage.getItem("roles");
         var busy = true;
@@ -37,7 +30,6 @@ var ContactBrowserApp = React.createClass({
             release_spinning = true;
             role_spinning = true;
         }
-
         return {
             count: 0,
             data: [],
@@ -52,6 +44,18 @@ var ContactBrowserApp = React.createClass({
             release_spinning: release_spinning,
             role_spinning: role_spinning,
         };
+    },
+    componentDidMount: function() {
+        this.loadInitialData();
+    },
+    loadInitialData: function() {
+        var token = localStorage.getItem('token');
+        if (!token) {
+            this.getToken(this.getInitialData);
+        }
+        else {
+            this.getInitialData(token);
+        }
     },
     getToken: function (getInitialData) {
         var url = Url + 'auth/token/obtain/';
