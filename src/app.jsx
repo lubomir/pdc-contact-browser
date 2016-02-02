@@ -28,10 +28,14 @@ var ContactBrowserApp = React.createClass({
         var busy = true;
         var releases = [];
         var roles = [];
+        var release_spinning = false;
+        var role_spinning = false;
         if (cached_releases && cached_roles) {
             busy = false;
             releases = cached_releases.split(",");
             roles = cached_roles.split(",");
+            release_spinning = true;
+            role_spinning = true;
         }
 
         return {
@@ -45,8 +49,8 @@ var ContactBrowserApp = React.createClass({
             showresult: false,
             releases: releases,
             roles: roles,
-            release_spinning: true,
-            role_spinning: true,
+            release_spinning: release_spinning,
+            role_spinning: role_spinning,
         };
     },
     getToken: function (getInitialData) {
@@ -92,7 +96,9 @@ var ContactBrowserApp = React.createClass({
             }.bind(this),
             error: function (xhr, status, err) {
                 if (err == "UNAUTHORIZED") {
-                    this.setState({busy: true});
+                    this.setState({busy: true,
+                                  release_spinning: false,
+                                  role_spinning: false});
                     this.getToken(this.getInitialData);
                 }
                 else {
