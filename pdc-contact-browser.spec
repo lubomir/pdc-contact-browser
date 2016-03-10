@@ -26,3 +26,7 @@ cp index.html %{buildroot}/var/www/html/%{name}
 %files
 %defattr(-,root,root)
 /var/www/html/%{name}
+
+%changelog
+* Wed Mar 9 2016 Chuang Zhang <chuzhang@redhat.com> 0.1.0-1
+- init spec for pdc contact browser
