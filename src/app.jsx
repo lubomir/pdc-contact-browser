@@ -78,8 +78,11 @@ var ContactBrowserApp = React.createClass({
             this.getInitialData(token);
         }
         if (this.state.resource) {
-            var url = this.state.url + this.state.resource;
-            this.setState({url: url, busy: true, release_spinning: false, role_spinning: false, showresult: true},
+            var page = 1;
+            if (this.state.params['page']) {
+                page = this.state.params['page'];
+            }
+            this.setState({busy: true, page: Number(page), release_spinning: false, role_spinning: false, showresult: true},
                           this.loadData);
         }
     },
@@ -170,12 +173,12 @@ var ContactBrowserApp = React.createClass({
     },
     handleFormSubmit: function (data) {
         var params = {};
-        var url = null;
+        var resource = null;
         if (data['release'] == 'global') {
-            url = this.state.url + 'global-component-contacts/';
+            resource = 'global-component-contacts/';
         }
         else {
-            url = this.state.url + 'release-component-contacts/';
+            resource = 'release-component-contacts/';
             if(data['release'] != 'all') {
                 params['release'] = data['release'];
             }
@@ -186,7 +189,7 @@ var ContactBrowserApp = React.createClass({
         if (data['role'] != 'all') {
             params['role'] = data['role'];
         }
-        this.setState({url: url, params: params, page: 1, showresult: true},
+        this.setState({resource: resource, params: params, page: 1, showresult: true},
                       this.loadData);
     },
     loadData: function () {
@@ -195,7 +198,7 @@ var ContactBrowserApp = React.createClass({
         data["page"] = this.state.page;
         var root = this.state.root;
         $.ajax({
-            url: this.state.url,
+            url: this.state.url + this.state.resource,
             dataType: "json",
             data: data,
             complete : function(response){
