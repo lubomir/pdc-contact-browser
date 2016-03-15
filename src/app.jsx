@@ -11,8 +11,6 @@ var Row = ReactBootstrap.Row;
 var Col = ReactBootstrap.Col;
 var Pagination = ReactBootstrap.Pagination;
 var Modal = ReactBootstrap.Modal;
-var Setting = require('./serversetting.json');
-var Url = Setting.server;
 var ReactRouter = require('react-router');
 var Router = ReactRouter.Router;
 var Route = ReactRouter.Route;
@@ -55,7 +53,7 @@ var ContactBrowserApp = React.createClass({
         return {
             count: 0,
             data: [],
-            url: Url,
+            url: null,
             params: params,
             page: 1,
             busy: busy,
@@ -70,24 +68,38 @@ var ContactBrowserApp = React.createClass({
         };
     },
     componentDidMount: function() {
-        var token = localStorage.getItem('token');
-        if (!token) {
-            this.getToken(this.getInitialData);
-        }
-        else {
-            this.getInitialData(token);
-        }
-        if (this.state.resource) {
-            var page = 1;
-            if (this.state.params['page']) {
-                page = this.state.params['page'];
+        var self = this;
+        $.ajaxSetup({beforeSend: function(xhr){
+                if (xhr.overrideMimeType){ 
+                    xhr.overrideMimeType("application/json");
+                }
             }
-            this.setState({busy: true, page: Number(page), release_spinning: false, role_spinning: false, showresult: true},
-                          this.loadData);
+        });
+        $.getJSON( "src/serversetting.json", function( data ) {
+            localStorage.setItem('server', data['server']);
+            self.state.url = data['server'];
+            handleData();
+        });
+        function handleData() {
+            var token = localStorage.getItem('token');
+            if (!token) {
+                self.getToken(self.getInitialData);
+            }
+            else {
+                self.getInitialData(token);
+            }
+            if (self.state.resource) {
+                var page = 1;
+                if (self.state.params['page']) {
+                    page = self.state.params['page'];
+                }
+                self.setState({busy: true, page: Number(page), release_spinning: false, role_spinning: false, showresult: true},
+                          self.loadData);
+            }
         }
     },
     getToken: function (getInitialData) {
-        var url = Url + 'auth/token/obtain/';
+        var url = localStorage.getItem('server') + 'auth/token/obtain/';
         var x = new XMLHttpRequest();
         x.open('GET', url, true);
         x.withCredentials = true;
@@ -112,6 +124,7 @@ var ContactBrowserApp = React.createClass({
         var roles = ['all'];
         var param = {};
         param["page_size"] = -1;
+        var Url = localStorage.getItem('server');
         $.ajax({
             url: Url + "releases/",
             dataType: "json",
@@ -202,7 +215,7 @@ var ContactBrowserApp = React.createClass({
             dataType: "json",
             data: data,
             complete : function(response){
-                var res = this.url.replace(Url, root);
+                var res = this.url.replace(localStorage.getItem('server'), root);
                 if (window.history.pushState) {
                     window.history.pushState(null, "complete", res);
                 }
@@ -226,7 +239,7 @@ var ContactBrowserApp = React.createClass({
         this.setState({page: p}, this.loadData);
     },
     handleInputChange: function () {
-        this.setState({url: Url});
+        this.setState({url: localStorage.getItem('server')});
     },
     clearError: function () {
         this.setState({error: {}});
