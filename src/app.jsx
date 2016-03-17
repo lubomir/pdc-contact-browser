@@ -89,6 +89,13 @@ var ContactBrowserApp = React.createClass({
                 self.getInitialData(token);
             }
             if (self.state.resource) {
+                var allowed_params = ["component", "release", "role", "page"];
+                var params = Object.keys(self.state.params);
+                for (var idx in params) {
+                    if ($.inArray(params[idx], allowed_params) < 0) {
+                        throw "Input params should be in list 'component', 'release', 'role' or 'page'";
+                    }
+                }
                 var page = 1;
                 if (self.state.params['page']) {
                     page = self.state.params['page'];
@@ -247,7 +254,7 @@ var ContactBrowserApp = React.createClass({
     render: function () {
         return (
             <div className="container-fluid">
-                <LoadForm releases={this.state.releases} roles={this.state.roles} release_spinning={this.state.release_spinning} role_spinning={this.state.role_spinning} onSubmit={this.handleFormSubmit} inputChange={this.handleInputChange}/>
+                <LoadForm releases={this.state.releases} roles={this.state.roles} release_spinning={this.state.release_spinning} role_spinning={this.state.role_spinning} params={this.state.params} onSubmit={this.handleFormSubmit} inputChange={this.handleInputChange}/>
                 <Pager count={this.state.count} page={this.state.page} onPageChange={this.handlePageChange} />
                 <Browser data={this.state.data}  showresult={this.state.showresult} />
                 <Pager count={this.state.count} page={this.state.page} onPageChange={this.handlePageChange} />
@@ -362,13 +369,21 @@ var LoadForm = React.createClass({
     handleInputChange: function () {
         this.props.inputChange();
     },
+    setItem: function (item) {
+        var value = (this.props.params[item]) ? this.props.params[item]:"all";
+        $("#" + item +" option[value='" + value + "']").attr('selected','selected');
+    },
     render: function () {
         var releases = this.props.releases.map(function (val) {
-            return <option key={val}>{val}</option>;
+            return <option value={val}>{val}</option>;
         });
         var roles = this.props.roles.map(function (val) {
-            return <option key={val}>{val}</option>;
+            return <option value={val}>{val}</option>;
         });
+        var component = (this.props.params['component']) ? this.props.params['component']:"";
+        $("#component").attr("value", component);
+        this.setItem("release");
+        this.setItem("role");
         var release_spinning = this.props.release_spinning;
         var role_spinning =  this.props.role_spinning;
         return (
