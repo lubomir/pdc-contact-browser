@@ -216,21 +216,25 @@ var ContactBrowserApp = React.createClass({
         this.setState({busy: true});
         var data = JSON.parse(JSON.stringify(this.state.params));
         data["page"] = this.state.page;
-        var root = this.state.root;
         $.ajax({
             url: this.state.url + this.state.resource,
             dataType: "json",
             data: data,
-            complete : function(response){
-                var res = this.url.replace(localStorage.getItem('server'), root);
+            success: function (response) {
+                var arr = new Array();
+                for (var key in data) {
+                    arr.push(key + "=" + data[key]);
+                }
+                var res = this.state.root + this.state.resource + "?" + arr.join("&");
+                var state = {};
+                state['Url'] = res;
+                state['response'] = response;
                 if (window.history.pushState) {
-                    window.history.pushState(null, "complete", res);
+                    window.history.pushState(state, "Url", res);
                 }
                 else {
                     window.location.hash = res;
                 }
-            },
-            success: function (response) {
                 this.setState({busy: false,
                               data: response.results,
                               count: response.count,
@@ -241,6 +245,59 @@ var ContactBrowserApp = React.createClass({
                 this.displayError(this.state.url, 'GET', xhr, status, err);
             }.bind(this)
         });
+        window.onpopstate = function(event) {
+            var params = {};
+            var resource = null;
+            if (event.state) {
+                var response = event.state['response'];
+                var url = event.state['Url'];
+                var res = url.split("#");
+                if (res[1]) {
+                    var inputs = res[1].split("?");
+                    resource = inputs[0].replace("/", "");
+                    if (inputs[1]) {
+                        var arrs = inputs[1].split("&");
+                        for (var index in arrs) {
+                            var param_arrs = arrs[index].split("=");
+                            if (param_arrs[1]) {
+                                params[param_arrs[0]] = param_arrs[1];
+                            }
+                        }
+                    }
+                }
+                this.setState({busy: false,
+                              showresult: true,
+                              data: response.results,
+                              count: response.count,
+                              next: response.next,
+                              prev: response.prev});
+            }
+            else {
+                this.setState({busy: false, showresult: false});
+            }
+            if (params['component']) {
+                $("#component").val(params['component']);
+            }
+            else {
+                $("#component").val("");
+            }
+            if (params['release']) {
+                $("#release").val(params['release']);
+            }
+            else if (resource == "global-component-contacts/") {
+                $("#release").val("global");
+            }
+            else {
+                $("#release").val("all");
+            }
+            if (params['role']) {
+                $("#role").val(params['role']);
+            }
+            else {
+                $("#role").val("all");
+            }
+
+        }.bind(this);
     },
     handlePageChange: function (p) {
         this.setState({page: p}, this.loadData);
@@ -255,9 +312,9 @@ var ContactBrowserApp = React.createClass({
         return (
             <div className="container-fluid">
                 <LoadForm releases={this.state.releases} roles={this.state.roles} release_spinning={this.state.release_spinning} role_spinning={this.state.role_spinning} params={this.state.params} resource={this.state.resource} onSubmit={this.handleFormSubmit} inputChange={this.handleInputChange}/>
-                <Pager count={this.state.count} page={this.state.page} onPageChange={this.handlePageChange} />
+                <Pager count={this.state.count} showresult={this.state.showresult} page={this.state.page} onPageChange={this.handlePageChange} />
                 <Browser data={this.state.data}  showresult={this.state.showresult} />
-                <Pager count={this.state.count} page={this.state.page} onPageChange={this.handlePageChange} />
+                <Pager count={this.state.count} showresult={this.state.showresult} page={this.state.page} onPageChange={this.handlePageChange} />
                 <Spinner enabled={this.state.busy} />
                 <NetworkErrorDialog onClose={this.clearError} data={this.state.error} />
             </div>
@@ -330,7 +387,7 @@ var Pager = React.createClass({
         this.props.onPageChange(selectedEvent.eventKey);
     },
     render: function () {
-        if (this.props.count == 0) {
+        if (this.props.count == 0 || !this.props.showresult) {
             return <div />;
         }
         var n_pages = Math.ceil(this.props.count / PAGE_SIZE);
