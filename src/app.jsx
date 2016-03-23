@@ -254,7 +254,7 @@ var ContactBrowserApp = React.createClass({
     render: function () {
         return (
             <div className="container-fluid">
-                <LoadForm releases={this.state.releases} roles={this.state.roles} release_spinning={this.state.release_spinning} role_spinning={this.state.role_spinning} params={this.state.params} onSubmit={this.handleFormSubmit} inputChange={this.handleInputChange}/>
+                <LoadForm releases={this.state.releases} roles={this.state.roles} release_spinning={this.state.release_spinning} role_spinning={this.state.role_spinning} params={this.state.params} resource={this.state.resource} onSubmit={this.handleFormSubmit} inputChange={this.handleInputChange}/>
                 <Pager count={this.state.count} page={this.state.page} onPageChange={this.handlePageChange} />
                 <Browser data={this.state.data}  showresult={this.state.showresult} />
                 <Pager count={this.state.count} page={this.state.page} onPageChange={this.handlePageChange} />
@@ -382,7 +382,12 @@ var LoadForm = React.createClass({
         });
         var component = (this.props.params['component']) ? this.props.params['component']:"";
         $("#component").attr("value", component);
-        this.setItem("release");
+        if (this.props.resource=="global-component-contacts/") {
+            $("#release option[value='global']").attr('selected','selected');
+        }
+        else {
+            this.setItem("release");
+        }
         this.setItem("role");
         var release_spinning = this.props.release_spinning;
         var role_spinning =  this.props.role_spinning;
