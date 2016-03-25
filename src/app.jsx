@@ -3,18 +3,23 @@
 var PAGE_SIZE = 20;
 
 var React = require('react');
+var ReactDOM = require('react-dom')
 var ReactBootstrap = require('react-bootstrap');
 var $ = require('jquery');
+var ReactRouter = require('react-router');
+var ReactBSTable = require('react-bootstrap-table');
+var createHistory = require('history/lib/createHashHistory');
 
 var Button = ReactBootstrap.Button;
+var ButtonToolbar = ReactBootstrap.ButtonToolbar;
 var Row = ReactBootstrap.Row;
 var Col = ReactBootstrap.Col;
 var Pagination = ReactBootstrap.Pagination;
 var Modal = ReactBootstrap.Modal;
-var ReactRouter = require('react-router');
 var Router = ReactRouter.Router;
 var Route = ReactRouter.Route;
-var createHistory = require('history/lib/createHashHistory');
+var BootstrapTable = ReactBSTable.BootstrapTable;
+var TableHeaderColumn = ReactBSTable.TableHeaderColumn;
 
 var ContactBrowserApp = React.createClass({
     getInitialState: function () {
@@ -65,6 +70,7 @@ var ContactBrowserApp = React.createClass({
             role_spinning: role_spinning,
             root: root,
             resource: resource,
+            contacts: {},
         };
     },
     componentDidMount: function() {
@@ -127,56 +133,53 @@ var ContactBrowserApp = React.createClass({
                 xhr.setRequestHeader('Authorization', 'Token ' + token);
             }
         });
-        var releases = ['all', 'global'];
-        var roles = ['all'];
+        var releases = [];
+        var roles = [];
+        var mailinglists = [];
+        var people = [];
         var param = {};
         param["page_size"] = -1;
         var Url = localStorage.getItem('server');
-        $.ajax({
-            url: Url + "releases/",
-            dataType: "json",
-            data: param,
-            method: "GET",
-            success: function (response) {
+        $.when(
+            $.getJSON(Url + "releases/", param, function (response) {
                 for (var idx in response) {
                     releases.push(response[idx].release_id)
                 }
-                this.setState({busy: false,
-                              releases: releases,
-                              release_spinning: false});
-                localStorage.setItem('releases', releases);
-
-            }.bind(this),
-            error: function (xhr, status, err) {
-                if (err == "UNAUTHORIZED") {
-                    this.setState({busy: true,
-                                  release_spinning: false,
-                                  role_spinning: false});
-                    this.getToken(this.getInitialData);
-                }
-                else {
-                    this.displayError(Url + "releases/", 'GET', xhr, status, err);
-                }
-            }.bind(this)
-        });
-        $.ajax({
-            url: Url + "contact-roles/",
-            dataType: "json",
-            data: param,
-            method: "GET",
-            success: function (response) {
+            }),
+            $.getJSON(Url + "contact-roles/", param, function (response) {
                 for (var idx in response) {
                     roles.push(response[idx].name);
                 }
-                this.setState({busy: false,
-                              roles: roles,
+            }),
+            $.getJSON(Url + "contacts/mailing-lists/", param, function (response) {
+                mailinglists = response;
+            }),
+            $.getJSON(Url + "contacts/people/", param, function (response) {
+                people = response;
+            })
+        ).then( function () {
+            var contacts = {};
+            contacts["mail"] = mailinglists;
+            contacts["people"] = people;
+            this.setState({busy: false,
+                          releases: releases,
+                          roles: roles,
+                          release_spinning: false,
+                          role_spinning: false,
+                          contacts: contacts});
+            localStorage.setItem('releases', releases);
+            localStorage.setItem('roles', roles);
+        }.bind(this), function(xhr, status, err) {
+            if (err == "UNAUTHORIZED") {
+                this.setState({busy: true,
+                              release_spinning: false,
                               role_spinning: false});
-                localStorage.setItem('roles', roles);
-            }.bind(this),
-            error: function (xhr, status, err) {
-                this.displayError(Url + "contact-roles/", 'GET', xhr, status, err);
-            }.bind(this)
-        });
+                this.getToken(this.getInitialData);
+            }
+            else {
+                this.displayError(Url, 'GET', xhr, status, err);
+            }
+        }.bind(this));
     },
     displayError: function (url, method, xhr, status, err) {
         console.log(url, status, err);
@@ -210,6 +213,10 @@ var ContactBrowserApp = React.createClass({
             params['role'] = data['role'];
         }
         this.setState({resource: resource, params: params, page: 1, showresult: true},
+                      this.loadData);
+    },
+    updateData: function (resource, params) {
+        this.setState({resource: resource, params: params, showresult: true},
                       this.loadData);
     },
     loadData: function () {
@@ -313,7 +320,7 @@ var ContactBrowserApp = React.createClass({
             <div className="container-fluid">
                 <LoadForm releases={this.state.releases} roles={this.state.roles} release_spinning={this.state.release_spinning} role_spinning={this.state.role_spinning} params={this.state.params} resource={this.state.resource} onSubmit={this.handleFormSubmit} inputChange={this.handleInputChange}/>
                 <Pager count={this.state.count} showresult={this.state.showresult} page={this.state.page} onPageChange={this.handlePageChange} />
-                <Browser data={this.state.data}  showresult={this.state.showresult} />
+                <Browser data={this.state.data} showresult={this.state.showresult} resource={this.state.resource} params={this.state.params} releases={this.state.releases} roles={this.state.roles} contacts={this.state.contacts} onUpdate={this.updateData}/>
                 <Pager count={this.state.count} showresult={this.state.showresult} page={this.state.page} onPageChange={this.handlePageChange} />
                 <Spinner enabled={this.state.busy} />
                 <NetworkErrorDialog onClose={this.clearError} data={this.state.error} />
@@ -417,9 +424,9 @@ var LoadForm = React.createClass({
     handleSubmit: function (e) {
         e.preventDefault();
         var data = {
-            'component': React.findDOMNode(this.refs.component).value.trim(),
-            'release': React.findDOMNode(this.refs.release).value,
-            'role': React.findDOMNode(this.refs.role).value
+            'component': ReactDOM.findDOMNode(this.refs.component).value.trim(),
+            'release': ReactDOM.findDOMNode(this.refs.release).value,
+            'role': ReactDOM.findDOMNode(this.refs.role).value
         };
         this.props.onSubmit(data);
     },
@@ -431,15 +438,26 @@ var LoadForm = React.createClass({
         $("#" + item +" option[value='" + value + "']").attr('selected','selected');
     },
     render: function () {
-        var releases = this.props.releases.map(function (val) {
+        var rel = this.props.releases;
+        if ($.inArray("global", rel) < 0) {
+            rel.unshift("global");
+        }
+        if ($.inArray("all", rel) < 0) {
+            rel.unshift("all");
+        }
+        var releases = rel.map(function (val) {
             return <option value={val}>{val}</option>;
         });
-        var roles = this.props.roles.map(function (val) {
+        var r = this.props.roles;
+        if ($.inArray("all", r) < 0) {
+            r.unshift("all");
+        }
+        var roles = r.map(function (val) {
             return <option value={val}>{val}</option>;
         });
         var component = (this.props.params['component']) ? this.props.params['component']:"";
         $("#component").attr("value", component);
-        if (this.props.resource=="global-component-contacts/") {
+        if (this.props.resource == "global-component-contacts/") {
             $("#release option[value='global']").attr('selected','selected');
         }
         else {
@@ -490,59 +508,158 @@ var LoadForm = React.createClass({
 });
 
 var Browser = React.createClass({
+    onAfterDeleteRow: function(rowKeys) {
+        $.ajaxSetup({
+            beforeSend: function (xhr) {
+                xhr.setRequestHeader('Authorization', 'Token ' + localStorage.getItem('token'));
+            }
+        });
+        $.ajax({
+            url: rowKeys[0],
+            method: "DELETE",
+            success: function (response) {
+                this.props.onUpdate(this.props.resource, this.props.params);
+                window.alert("Record is deleted successfully on server.");
+            }.bind(this),
+            error: function (response) {
+                this.props.onUpdate(this.props.resource, this.props.params);
+                window.alert(response.responseText);
+            }.bind(this)
+        });
+    },
+    onAfterInsertRow: function(row) {
+        var data = {};
+        var url = localStorage.getItem('server');
+        data["role"] = row["role"];
+        if (row["release"] == "global") {
+            data["component"] = row["component"];
+            url = url + "global-component-contacts/";
+        }
+        else {
+            data["component"] = {"name": row["component"], "release": row["release"]};
+            url = url + "release-component-contacts/";
+        }
+        var arr = row["contact"].split("<");
+        var name = arr[0].trim();
+        var email = arr[1].replace(">", "").trim();
+        if ($.inArray(row["contact"], this.converted_mailinglists) >= 0) {
+            data["contact"] = {"mail_name": name, "email": email};
+        }
+        else if ($.inArray(row["contact"], this.converted_people) >= 0) {
+            data["contact"] = {"username": name, "email": email};
+        }
+        else {
+            throw "Something wrong with the contacts";
+        }
+        $.ajaxSetup({
+            beforeSend: function (xhr) {
+                xhr.setRequestHeader('Authorization', 'Token ' + localStorage.getItem('token'));
+            }
+        });
+        $.ajax({
+            url: url,
+            dataType: "json",
+            contentType: 'application/json',
+            method: "POST",
+            data: JSON.stringify(data),
+            success: function (response) {
+                this.props.onUpdate(this.props.resource, this.props.params);
+                window.alert("Record is created successfully on server.");
+            }.bind(this),
+            error: function (response) {
+                this.props.onUpdate(this.props.resource, this.props.params);
+                window.alert(response.responseText);
+            }.bind(this)
+        });
+
+    },
     render: function () {
         if (!this.props.showresult) {
             return <div />;
         }
+        if (this.props.roles[0] == "all") {
+            this.props.roles.shift();
+        }
+        if (this.props.releases[0] == "all") {
+            this.props.releases.shift();
+        }
+        var role_editable = {
+            type: "select",
+            options:{
+            values: this.props.roles
+            }
+        };
+        var release_editable = {
+            type: "select",
+            options:{
+            values: this.props.releases
+            }
+        };
+        var mailinglists = this.props.contacts["mail"];
+        var people = this.props.contacts["people"];
+        var converted_mailinglists = [];
+        var converted_people = [];
+        for (var idx in mailinglists) {
+            converted_mailinglists.push(mailinglists[idx].mail_name + " <" + mailinglists[idx].email + ">");
+        }
+        for (var idx in people) {
+            converted_people.push(people[idx].username + " <" + people[idx].email + ">");
+        }
+        var converted_contacts = converted_mailinglists.concat(converted_people);
+        this.converted_mailinglists = converted_mailinglists;
+        this.converted_people = converted_people;
+        this.converted_contacts = converted_contacts;
+        var contact_editable = {
+            type: "select",
+            options:{
+            values: converted_contacts
+            }
+        };
+        var selectRowProp = {
+            mode: "radio",
+            clickToSelect: true
+        };
+        var options = {
+            afterDeleteRow: this.onAfterDeleteRow,
+            afterInsertRow: this.onAfterInsertRow
+        }
         var contacts = this.props.data.map(function (c) {
             var release = null;
             var component = null;
+            var contact = null;
+            var id = null;
+            var url = localStorage.getItem('server');
             if (c.component.release) {
                 release = c.component.release;
                 component = c.component.name;
+                url = url + "release-component-contacts/" + c.id + "/";
             }
             else {
                 release = "N/A";
                 component = c.component;
+                url = url + 'global-component-contacts/' + c.id + "/";
             }
-            return (<ContactView key={c.url} data={c} component={component} release={release} />);
-        }.bind(this));
+            if (c.contact.username) {
+                contact = c.contact.username + " <" + c.contact.email + ">";
+            }
+            else {
+                contact = c.contact.mail_name + " <" + c.contact.email + ">";
+            }
+            return {"component": component, "release": release, "contact": contact, "role": c.role, "url": url};
+        });
         return (
-            <form className="form-horizontal" >
-            <div>
-                <Col md={10} mdOffset={1}>
-                    <h3 className="text-center"> Results </h3>
-                </Col>
-                <Col md={6} mdOffset={3}>
-                    <table>
-                        <thead>
-                            <tr>
-                                <th className="col-sm-1">Component</th>
-                                <th className="col-sm-1">Release</th>
-                                <th className="col-sm-1">Email</th>
-                                <th className="col-sm-1">Contact Role</th>
-                            </tr>
-                        </thead>
-                        <tbody className="text-left">
-                            {contacts}
-                        </tbody>
-                    </table>
-                </Col>
-            </div>
-            </form>
-        );
-    }
-});
-
-var ContactView = React.createClass({
-    render: function () {
-        return (
-            <tr>
-                <td><p className="form-control-static">{this.props.component}</p></td>
-                <td><p className="form-control-static">{this.props.release}</p></td>
-                <td><p className="form-control-static">{this.props.data.contact.email}</p></td>
-                <td><p className="form-control-static">{this.props.data.role}</p></td>
-            </tr>
+                <div>
+                    <Col md={8} mdOffset={2}>
+                        <h3 className="text-center"> Results </h3>
+                        <BootstrapTable data={contacts} striped={true} hover={true} condensed={true} insertRow={true} deleteRow={true} selectRow={selectRowProp} options={options}>
+                            <TableHeaderColumn dataField="url" isKey={true} autoValue={true} hidden={true}>Url</TableHeaderColumn>
+                            <TableHeaderColumn dataField="component" dataAlign="center" width="80">Component</TableHeaderColumn>
+                            <TableHeaderColumn dataField="release" dataAlign="center" editable={release_editable} width="60">Release</TableHeaderColumn>
+                            <TableHeaderColumn dataField="contact" dataAlign="center" editable={contact_editable} width="180">Contact</TableHeaderColumn>
+                            <TableHeaderColumn dataField="role" dataAlign="center" editable={role_editable} width="60">Contact Role</TableHeaderColumn>
+                        </BootstrapTable>
+                    </Col>
+                </div>
         );
     }
 });
