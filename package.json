@@ -9,6 +9,7 @@
   ],
   "private": true,
   "dependencies": {
+    "history": "^2.0.1",
     "jquery": "~2.1.4",
     "react": ">=0.13.3",
     "react-bootstrap": ">=0.23.5",
