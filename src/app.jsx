@@ -317,14 +317,20 @@ var ContactBrowserApp = React.createClass({
     },
     render: function () {
         return (
-            <div className="container-fluid">
+          <div className="container-fluid wrapper">
+            <Row className="layout">
+              <Col md={4} className="leftCol">
                 <LoadForm releases={this.state.releases} roles={this.state.roles} release_spinning={this.state.release_spinning} role_spinning={this.state.role_spinning} params={this.state.params} resource={this.state.resource} onSubmit={this.handleFormSubmit} inputChange={this.handleInputChange}/>
+              </Col>
+              <Col md={8} className="rightCol">
                 <Pager count={this.state.count} showresult={this.state.showresult} page={this.state.page} onPageChange={this.handlePageChange} />
                 <Browser data={this.state.data} showresult={this.state.showresult} resource={this.state.resource} params={this.state.params} releases={this.state.releases} roles={this.state.roles} contacts={this.state.contacts} onUpdate={this.updateData}/>
                 <Pager count={this.state.count} showresult={this.state.showresult} page={this.state.page} onPageChange={this.handlePageChange} />
-                <Spinner enabled={this.state.busy} />
-                <NetworkErrorDialog onClose={this.clearError} data={this.state.error} />
-            </div>
+              </Col>
+            </Row>
+            <Spinner enabled={this.state.busy} />
+            <NetworkErrorDialog onClose={this.clearError} data={this.state.error} />
+          </div>
         );
     }
 });
@@ -400,10 +406,10 @@ var Pager = React.createClass({
         var n_pages = Math.ceil(this.props.count / PAGE_SIZE);
         return (
             <Row>
-                <Col md={6}>
+                <Col md={3}>
                     <p className="count-text">{this.props.count} contacts</p>
                 </Col>
-                <Col md={6} className="text-right">
+                <Col md={9} className="text-right">
                     <Pagination
                         prev
                         next
@@ -468,18 +474,18 @@ var LoadForm = React.createClass({
         var role_spinning =  this.props.role_spinning;
         return (
             <Row className="loadForm">
-                <Col md={10} mdOffset={1}>
+                <Col md={12}>
                     <h2 className="text-center">Contact Browser</h2>
                     <form className="form-horizontal" onSubmit={this.handleSubmit}>
                         <div className="form-group">
-                            <label htmlFor="component" className="col-sm-4 control-label">Component:</label>
-                            <div className="col-sm-4">
+                            <label htmlFor="component" className="col-md-6 control-label">Component:</label>
+                            <div className="col-md-6">
                                 <input type="text" className="form-control" id="component" ref="component" onChange={this.handleInputChange}/>
                             </div>
                         </div>
                         <div className="form-group">
-                            <label htmlFor="release" className="col-sm-4 control-label">Release:</label>
-                            <Col sm={4} >
+                            <label htmlFor="release" className="col-md-6 control-label">Release:</label>
+                            <Col md={6} >
                                 <select className="form-control" id="release" ref="release" required="required" onChange={this.handleInputChange}>
                                    {releases}
                                 </select>
@@ -487,8 +493,8 @@ var LoadForm = React.createClass({
                             <Spinner_loader enabled={release_spinning} />
                         </div>
                         <div className="form-group">
-                            <label htmlFor="role" className="col-sm-4 control-label">Contact Role:</label>
-                            <Col sm={4} >
+                            <label htmlFor="role" className="col-md-6 control-label">Contact Role:</label>
+                            <Col md={6} >
                                 <select className="form-control" id="role" ref="role" required="required" onChange={this.handleInputChange} >
                                    {roles}
                                 </select>
@@ -496,7 +502,7 @@ var LoadForm = React.createClass({
                             <Spinner_loader enabled={role_spinning} />
                         </div>
                         <div className="form-group">
-                            <Col sm={8} smOffset={2} className="text-center">
+                            <Col md={8} mdOffset={2} className="text-center">
                                 <Button type="submit">Search</Button>
                             </Col>
                         </div>
@@ -649,8 +655,7 @@ var Browser = React.createClass({
         });
         return (
                 <div>
-                    <Col md={8} mdOffset={2}>
-                        <h3 className="text-center"> Results </h3>
+                    <Col md={12}>
                         <BootstrapTable data={contacts} striped={true} hover={true} condensed={true} insertRow={true} deleteRow={true} selectRow={selectRowProp} options={options}>
                             <TableHeaderColumn dataField="url" isKey={true} autoValue={true} hidden={true}>Url</TableHeaderColumn>
                             <TableHeaderColumn dataField="component" dataAlign="center" width="80">Component</TableHeaderColumn>
