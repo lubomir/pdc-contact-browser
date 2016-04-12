@@ -48,16 +48,19 @@ h2 button {
     right: 0;
     bottom: 0;
 }
-.row {
+.layout {
   display: -webkit-box;
   display: -webkit-flex;
   display: -ms-flexbox;
   display: flex;
 }
-.row > [class*='col-'] {
+.layout > [class*='col-'] {
   display: flex;
   flex-direction: column;
 }
 .leftCol {
   background-color: #eee;
+}
+.pagination {
+  margin-right: 10px;
 }
