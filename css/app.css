@@ -1,5 +1,23 @@
+html, body {
+  height: 100%;
+  padding: 0;
+  margin: 0;
+  overflow: hidden;
+}
 h2 button {
     margin-left: 2em;
+}
+#app {
+  height: 100%;
+}
+.wrapper {
+  height: 100%;
+}
+.layout {
+  height: 100%;
+}
+.rightCol {
+  overflow-y: auto;
 }
 .error-dialog .modal-header {
     background-color: #F2DEDE;
@@ -29,4 +47,20 @@ h2 button {
     left: 0;
     right: 0;
     bottom: 0;
+}
+.layout {
+  display: -webkit-box;
+  display: -webkit-flex;
+  display: -ms-flexbox;
+  display: flex;
+}
+.layout > [class*='col-'] {
+  display: flex;
+  flex-direction: column;
+}
+.leftCol {
+  background-color: #eee;
+}
+.pagination {
+  margin-right: 10px;
 }

@@ -1,6 +1,6 @@
 'use strict';
 
-var PAGE_SIZE = 20;
+var PAGE_SIZE = 10;
 
 var React = require('react');
 var ReactDOM = require('react-dom')
@@ -37,7 +37,7 @@ var ContactBrowserApp = React.createClass({
             release_spinning = true;
             role_spinning = true;
         }
-        var params = {};
+        var params = { "page_size": 10 };
         var resource= null;
         var location = document.location.toString();
         var res = location.split("#");
@@ -95,7 +95,7 @@ var ContactBrowserApp = React.createClass({
                 self.getInitialData(token);
             }
             if (self.state.resource) {
-                var allowed_params = ["component", "release", "role", "page"];
+                var allowed_params = ["component", "release", "role", "page", "page_size"];
                 var params = Object.keys(self.state.params);
                 for (var idx in params) {
                     if ($.inArray(params[idx], allowed_params) < 0) {
@@ -317,14 +317,19 @@ var ContactBrowserApp = React.createClass({
     },
     render: function () {
         return (
-            <div className="container-fluid">
+          <div className="container-fluid wrapper">
+            <Row className="layout">
+              <Col md={4} className="leftCol">
                 <LoadForm releases={this.state.releases} roles={this.state.roles} release_spinning={this.state.release_spinning} role_spinning={this.state.role_spinning} params={this.state.params} resource={this.state.resource} onSubmit={this.handleFormSubmit} inputChange={this.handleInputChange}/>
-                <Pager count={this.state.count} showresult={this.state.showresult} page={this.state.page} onPageChange={this.handlePageChange} />
+              </Col>
+              <Col md={8} className="rightCol">
                 <Browser data={this.state.data} showresult={this.state.showresult} resource={this.state.resource} params={this.state.params} releases={this.state.releases} roles={this.state.roles} contacts={this.state.contacts} onUpdate={this.updateData}/>
                 <Pager count={this.state.count} showresult={this.state.showresult} page={this.state.page} onPageChange={this.handlePageChange} />
-                <Spinner enabled={this.state.busy} />
-                <NetworkErrorDialog onClose={this.clearError} data={this.state.error} />
-            </div>
+              </Col>
+            </Row>
+            <Spinner enabled={this.state.busy} />
+            <NetworkErrorDialog onClose={this.clearError} data={this.state.error} />
+          </div>
         );
     }
 });
@@ -400,17 +405,18 @@ var Pager = React.createClass({
         var n_pages = Math.ceil(this.props.count / PAGE_SIZE);
         return (
             <Row>
-                <Col md={6}>
+                <Col md={3}>
                     <p className="count-text">{this.props.count} contacts</p>
                 </Col>
-                <Col md={6} className="text-right">
+                <Col md={9}>
                     <Pagination
+                        bsClass="pagination pull-right"
                         prev
                         next
                         first
                         last
                         ellipsis
-                        maxButtons={10}
+                        maxButtons={5}
                         items={n_pages}
                         activePage={this.props.page}
                         onSelect={this.handlePageChange} />
@@ -468,18 +474,18 @@ var LoadForm = React.createClass({
         var role_spinning =  this.props.role_spinning;
         return (
             <Row className="loadForm">
-                <Col md={10} mdOffset={1}>
+                <Col md={12}>
                     <h2 className="text-center">Contact Browser</h2>
                     <form className="form-horizontal" onSubmit={this.handleSubmit}>
                         <div className="form-group">
-                            <label htmlFor="component" className="col-sm-4 control-label">Component:</label>
-                            <div className="col-sm-4">
+                            <label htmlFor="component" className="col-md-6 control-label">Component:</label>
+                            <div className="col-md-6">
                                 <input type="text" className="form-control" id="component" ref="component" onChange={this.handleInputChange}/>
                             </div>
                         </div>
                         <div className="form-group">
-                            <label htmlFor="release" className="col-sm-4 control-label">Release:</label>
-                            <Col sm={4} >
+                            <label htmlFor="release" className="col-md-6 control-label">Release:</label>
+                            <Col md={6} >
                                 <select className="form-control" id="release" ref="release" required="required" onChange={this.handleInputChange}>
                                    {releases}
                                 </select>
@@ -487,8 +493,8 @@ var LoadForm = React.createClass({
                             <Spinner_loader enabled={release_spinning} />
                         </div>
                         <div className="form-group">
-                            <label htmlFor="role" className="col-sm-4 control-label">Contact Role:</label>
-                            <Col sm={4} >
+                            <label htmlFor="role" className="col-md-6 control-label">Contact Role:</label>
+                            <Col md={6} >
                                 <select className="form-control" id="role" ref="role" required="required" onChange={this.handleInputChange} >
                                    {roles}
                                 </select>
@@ -496,7 +502,7 @@ var LoadForm = React.createClass({
                             <Spinner_loader enabled={role_spinning} />
                         </div>
                         <div className="form-group">
-                            <Col sm={8} smOffset={2} className="text-center">
+                            <Col md={8} mdOffset={2} className="text-center">
                                 <Button type="submit">Search</Button>
                             </Col>
                         </div>
@@ -648,18 +654,13 @@ var Browser = React.createClass({
             return {"component": component, "release": release, "contact": contact, "role": c.role, "url": url};
         });
         return (
-                <div>
-                    <Col md={8} mdOffset={2}>
-                        <h3 className="text-center"> Results </h3>
-                        <BootstrapTable data={contacts} striped={true} hover={true} condensed={true} insertRow={true} deleteRow={true} selectRow={selectRowProp} options={options}>
-                            <TableHeaderColumn dataField="url" isKey={true} autoValue={true} hidden={true}>Url</TableHeaderColumn>
-                            <TableHeaderColumn dataField="component" dataAlign="center" width="80">Component</TableHeaderColumn>
-                            <TableHeaderColumn dataField="release" dataAlign="center" editable={release_editable} width="60">Release</TableHeaderColumn>
-                            <TableHeaderColumn dataField="contact" dataAlign="center" editable={contact_editable} width="180">Contact</TableHeaderColumn>
-                            <TableHeaderColumn dataField="role" dataAlign="center" editable={role_editable} width="60">Contact Role</TableHeaderColumn>
-                        </BootstrapTable>
-                    </Col>
-                </div>
+          <BootstrapTable height={"auto"} data={contacts} striped={true} hover={true} condensed={true} insertRow={true} deleteRow={true} selectRow={selectRowProp} options={options}>
+            <TableHeaderColumn dataField="url" isKey={true} autoValue={true} hidden={true}>Url</TableHeaderColumn>
+            <TableHeaderColumn dataField="component" dataAlign="center" width="80">Component</TableHeaderColumn>
+            <TableHeaderColumn dataField="release" dataAlign="center" editable={release_editable} width="60">Release</TableHeaderColumn>
+            <TableHeaderColumn dataField="contact" dataAlign="center" editable={contact_editable} width="180">Contact</TableHeaderColumn>
+            <TableHeaderColumn dataField="role" dataAlign="center" editable={role_editable} width="60">Contact Role</TableHeaderColumn>
+          </BootstrapTable>
         );
     }
 });
