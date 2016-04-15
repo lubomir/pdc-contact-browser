@@ -6,9 +6,7 @@ var React = require('react');
 var ReactDOM = require('react-dom')
 var ReactBootstrap = require('react-bootstrap');
 var $ = require('jquery');
-var ReactRouter = require('react-router');
 var ReactBSTable = require('react-bootstrap-table');
-var createHistory = require('history/lib/createHashHistory');
 
 var Button = ReactBootstrap.Button;
 var ButtonToolbar = ReactBootstrap.ButtonToolbar;
@@ -16,8 +14,6 @@ var Row = ReactBootstrap.Row;
 var Col = ReactBootstrap.Col;
 var Pagination = ReactBootstrap.Pagination;
 var Modal = ReactBootstrap.Modal;
-var Router = ReactRouter.Router;
-var Route = ReactRouter.Route;
 var BootstrapTable = ReactBSTable.BootstrapTable;
 var TableHeaderColumn = ReactBSTable.TableHeaderColumn;
 
@@ -452,14 +448,14 @@ var LoadForm = React.createClass({
             rel.unshift("all");
         }
         var releases = rel.map(function (val) {
-            return <option value={val}>{val}</option>;
+            return <option key={val} value={val}>{val}</option>;
         });
         var r = this.props.roles;
         if ($.inArray("all", r) < 0) {
             r.unshift("all");
         }
         var roles = r.map(function (val) {
-            return <option value={val}>{val}</option>;
+            return <option key={val} value={val}>{val}</option>;
         });
         var component = (this.props.params['component']) ? this.props.params['component']:"";
         $("#component").attr("value", component);
@@ -665,11 +661,10 @@ var Browser = React.createClass({
     }
 });
 
-React.render(
-    <Router history={createHistory({ queryKey: false })}>
-        <Route path="/" component={ ContactBrowserApp } />
-        <Route path="/release-component-contacts/" component={ ContactBrowserApp } />
-        <Route path="/global-component-contacts/" component={ ContactBrowserApp } />
-    </Router>,
-    document.getElementById('app')
-);
+module.exports = React.createClass({
+  render: function() {
+    return (
+      <ContactBrowserApp />
+    );
+  }
+});
