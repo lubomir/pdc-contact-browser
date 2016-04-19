@@ -62,32 +62,36 @@ module.exports = React.createClass({
           <h2 className="text-center">Contact Browser</h2>
           <form className="form-horizontal" onSubmit={this.handleSubmit}>
             <div className="form-group">
-              <label htmlFor="component" className="col-md-6 control-label">Component:</label>
-              <div className="col-md-6">
+              <label htmlFor="component" className="col-md-12">Component:</label>
+              <div className="col-md-10">
                 <input type="text" className="form-control" id="component" ref="component" onChange={this.handleInputChange}/>
               </div>
             </div>
             <div className="form-group">
-              <label htmlFor="release" className="col-md-6 control-label">Release:</label>
-              <Col md={6} >
-                  <select className="form-control" id="release" ref="release" required="required" onChange={this.handleInputChange}>
-                     {releases}
-                  </select>
+              <label htmlFor="release" className="col-md-12">Release:</label>
+              <Col md={10}>
+                <select className="form-control" id="release" ref="release" required="required" onChange={this.handleInputChange}>
+                  {releases}
+                </select>
               </Col>
-              <SpinnerLoader enabled={release_spinning} />
+              <Col md={2}>
+                <SpinnerLoader enabled={release_spinning} />
+              </Col>
             </div>
             <div className="form-group">
-              <label htmlFor="role" className="col-md-6 control-label">Contact Role:</label>
-              <Col md={6} >
+              <label htmlFor="role" className="col-md-12">Contact Role:</label>
+              <Col md={10}>
                 <select className="form-control" id="role" ref="role" required="required" onChange={this.handleInputChange} >
                   {roles}
                 </select>
               </Col>
-              <SpinnerLoader enabled={role_spinning} />
+              <Col md={2}>
+                <SpinnerLoader enabled={role_spinning} />
+              </Col>
             </div>
             <div className="form-group">
-              <Col md={8} mdOffset={2} className="text-center">
-                <Button type="submit">Search</Button>
+              <Col md={12}>
+                <Button type="submit" className="btn-primary">Search</Button>
               </Col>
             </div>
           </form>
