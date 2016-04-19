@@ -29,7 +29,7 @@ module.exports = React.createClass({
       release_spinning = true;
       role_spinning = true;
     }
-    var params = { "page_size": 10 };
+    var params = {};
     var resource= null;
     var location = document.location.toString();
     var res = location.split("#");
@@ -53,6 +53,7 @@ module.exports = React.createClass({
       url: null,
       params: params,
       page: 1,
+      page_size: 10,
       busy: busy,
       error: {},
       showresult: false,
@@ -203,6 +204,7 @@ module.exports = React.createClass({
     if (data['role'] != 'all') {
       params['role'] = data['role'];
     }
+
     this.setState({resource: resource, params: params, page: 1, showresult: true}, this.loadData);
     },
     updateData: function (resource, params) {
@@ -212,6 +214,7 @@ module.exports = React.createClass({
       this.setState({busy: true});
       var data = JSON.parse(JSON.stringify(this.state.params));
       data["page"] = this.state.page;
+      data["page_size"] = this.state.page_size;
       $.ajax({
         url: this.state.url + this.state.resource,
         dataType: "json",
@@ -313,7 +316,7 @@ module.exports = React.createClass({
             </Col>
             <Col md={8} className="rightCol">
               <Browser data={this.state.data} showresult={this.state.showresult} resource={this.state.resource} params={this.state.params} releases={this.state.releases} roles={this.state.roles} contacts={this.state.contacts} onUpdate={this.updateData}/>
-              <Pager count={this.state.count} showresult={this.state.showresult} page={this.state.page} onPageChange={this.handlePageChange} />
+              <Pager count={this.state.count} showresult={this.state.showresult} page={this.state.page} page_size={this.state.page_size} onPageChange={this.handlePageChange} />
             </Col>
           </Row>
           <Spinner enabled={this.state.busy} />

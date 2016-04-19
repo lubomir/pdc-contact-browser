@@ -5,7 +5,6 @@ var ReactBootstrap = require('react-bootstrap');
 var Row = ReactBootstrap.Row;
 var Col = ReactBootstrap.Col;
 var Pagination = ReactBootstrap.Pagination;
-var PAGE_SIZE = 10;
 
 module.exports = React.createClass({
   handlePageChange: function (event, selectedEvent) {
@@ -16,7 +15,7 @@ module.exports = React.createClass({
     if (this.props.count == 0 || !this.props.showresult) {
         return <div />;
     }
-    var n_pages = Math.ceil(this.props.count / PAGE_SIZE);
+    var n_pages = Math.ceil(this.props.count / this.props.page_size);
     return (
       <Row>
         <Col md={3}>
