@@ -7,9 +7,8 @@ var Col = ReactBootstrap.Col;
 var Pagination = ReactBootstrap.Pagination;
 
 module.exports = React.createClass({
-  handlePageChange: function (event, selectedEvent) {
-    event.preventDefault()
-    this.props.onPageChange(selectedEvent.eventKey);
+  handlePageChange: function (eventKey) {
+    this.props.onPageChange(eventKey);
   },
   render: function () {
     if (this.props.count == 0 || !this.props.showresult) {

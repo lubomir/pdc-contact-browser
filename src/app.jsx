@@ -8,6 +8,7 @@ var Col = ReactBootstrap.Col;
 var $ = require('jquery');
 
 var LoadForm = require('./LoadForm.jsx');
+var TableToolbar = require('./TableToolbar.jsx');
 var Browser = require('./Browser.jsx');
 var Pager = require('./Pager.jsx');
 var NetworkErrorDialog = require('./NetworkErrorDialog.jsx');
@@ -64,6 +65,7 @@ module.exports = React.createClass({
       root: root,
       resource: resource,
       contacts: {},
+      selectedContact: ''
     };
   },
   componentDidMount: function() {
@@ -307,16 +309,24 @@ module.exports = React.createClass({
     clearError: function () {
       this.setState({error: {}});
     },
+    onSelectContact: function(contactUrl) {
+      this.setState({ 'selectedContact': contactUrl });
+    },
+    clearSelectedContact: function() {
+      this.setState({ 'selectedContact': '' });
+    },
     render: function () {
       return (
         <div className="container-fluid wrapper">
           <Row className="layout">
-            <Col md={4} className="leftCol">
+            <Col md={3} className="leftCol">
               <LoadForm releases={this.state.releases} roles={this.state.roles} release_spinning={this.state.release_spinning} role_spinning={this.state.role_spinning} params={this.state.params} resource={this.state.resource} onSubmit={this.handleFormSubmit} inputChange={this.handleInputChange}/>
             </Col>
-            <Col md={8} className="rightCol">
-              <Browser data={this.state.data} showresult={this.state.showresult} resource={this.state.resource} params={this.state.params} releases={this.state.releases} roles={this.state.roles} contacts={this.state.contacts} onUpdate={this.updateData}/>
+            <Col md={9} className="rightCol">
               <Pager count={this.state.count} showresult={this.state.showresult} page={this.state.page} page_size={this.state.page_size} onPageChange={this.handlePageChange} />
+              <Browser data={this.state.data} showresult={this.state.showresult} onSelectContact={this.onSelectContact}/>
+              <TableToolbar showresult={this.state.showresult} releases={this.state.releases} roles={this.state.roles} contacts={this.state.contacts} resource={this.state.resource} params={this.state.params}
+                onUpdate={this.updateData} selectedContact={this.state.selectedContact} clearSelectedContact={this.clearSelectedContact}/>
             </Col>
           </Row>
           <Spinner enabled={this.state.busy} />
