@@ -61,6 +61,30 @@ h2 button {
 .leftCol {
   background-color: #eee;
 }
-.pagination {
-  margin-right: 10px;
+.react-bs-table {
+  margin: 0;
+}
+
+#table-toolbar {
+  margin-top: 10px;
+}
+#table-toolbar>ul>li>a {
+  padding: 6px 12px;
+  background-color: #fff;
+}
+#table-toolbar>ul>li.active>a {
+  background-color: #337ab7;
+}
+#table-toolbar .nav {
+  margin-left: 10px;
+  margin-bottom: -15px;
+}
+#table-toolbar .tab-content.show-panel {
+  padding: 30px 10px 10px 10px;
+  border: 1px dashed #337ab7;
+  border-radius: 4px;
+}
+#table-toolbar .alert {
+  padding: 5px;
+  margin-bottom: 0px;
 }
