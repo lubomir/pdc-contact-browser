@@ -12,13 +12,14 @@
   ],
   "private": true,
   "dependencies": {
+    "history": "^2.0.1",
     "jquery": "~2.1.4",
     "react": "^0.14.6",
-    "react-dom": "^0.14.6",
     "react-bootstrap": "^0.29.2",
     "react-bootstrap-table": "^2.1.1",
+    "react-dom": "^0.14.6",
     "react-router": "^2.0.0",
-    "history": "^2.0.1"
+    "react-select": "^0.9.1"
   },
   "devDependencies": {
     "react-tools": ">=0.13.3",

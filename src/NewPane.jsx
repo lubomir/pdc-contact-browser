@@ -1,6 +1,7 @@
 'use strict';
 
 var React = require('react');
+var Select = require('react-select');
 import {Row, Col, Tab, Nav, NavItem, FormGroup, ControlLabel, FormControl, ButtonGroup, Button, Glyphicon, Alert, Fade} from 'react-bootstrap';
 
 module.exports = React.createClass({
@@ -19,11 +20,11 @@ module.exports = React.createClass({
   updateCmp: function(event) {
     this.setState({ 'cmp': event.target.value.trim() });
   },
-  updateRelease: function(event) {
-    this.setState({ 'release': event.target.value.trim() });
+  updateRelease: function(value) {
+    this.setState({ 'release': value.trim() });
   },
-  updateContact: function(event) {
-    this.setState({ 'contact': event.target.value.trim() });
+  updateContact: function(value, item) {
+    this.setState({ 'contact': item[0].value.trim() });
   },
   updateRole: function(event) {
     this.setState({ 'role': event.target.value.trim() });
@@ -32,6 +33,7 @@ module.exports = React.createClass({
     this.setState({ 'cmp': '', 'release': '', 'contact': '', 'role': '' });
   },
   closePane: function() {
+    this.restoreDefaults();
     this.props.hidePanel();
   },
   displayMessage: function(msg, duration) {
@@ -142,36 +144,39 @@ module.exports = React.createClass({
     for (var idx in mailinglists) {
       converted_mailinglists.push(mailinglists[idx].mail_name + " <" + mailinglists[idx].email + ">");
     }
+    this.converted_mailinglists = converted_mailinglists;
     for (var idx in people) {
       converted_people.push(people[idx].username + " <" + people[idx].email + ">");
     }
-    var converted_contacts = converted_mailinglists.concat(converted_people);
-    this.converted_mailinglists = converted_mailinglists;
     this.converted_people = converted_people;
-    this.converted_contacts = converted_contacts;
+    var contactList = converted_mailinglists.concat(converted_people).map(function(contact, index) {
+      return { 'value': contact, 'label': contact, 'index': index };
+    });
+    var releaseList = this.props.releases.map(function(release) {
+      return { 'value': release, 'label': release };
+    });
 
     return (
       <div>
         <Row>
           <Col md={2}>
-            <FormGroup controlId="field_component">
-              <FormControl type="text" value={this.state.cmp} placeholder="Component" onChange={this.updateCmp} />
-            </FormGroup>
+            <FormControl type="text" value={this.state.cmp} placeholder="Component" onChange={this.updateCmp} />
           </Col>
           <Col md={2}>
-            <FormGroup controlId="field_release">
-              <FormControl type="text" value={this.state.release} placeholder="Release" onChange={this.updateRelease} />
-            </FormGroup>
+            <Select placeholder="Release" name="field_release" value={this.state.release} clearable={false} options={releaseList} onChange={this.updateRelease}/>
           </Col>
           <Col md={6}>
-            <FormGroup controlId="field_contact">
-              <FormControl type="text" value={this.state.contact} placeholder="Contact" onChange={this.updateContact} />
-            </FormGroup>
+            <Select placeholder="Contact" valueKey="index" value={this.state.contact} clearable={false} options={contactList} onChange={this.updateContact}/>
           </Col>
           <Col md={2}>
-            <FormGroup controlId="field_role">
-              <FormControl type="text" value={this.state.role} placeholder="Contact Role" onChange={this.updateRole} />
-            </FormGroup>
+            <FormControl componentClass="select" value={this.state.role} onChange={this.updateRole}>
+              <option value="" defaultValue disabled>Contact Role</option>
+              <option value="QE_Group">QE_Group</option>
+              <option value="QE_Leader">QE_Leader</option>
+              <option value="QE_ACK">QE_ACK</option>
+              <option value="Build_Owner">Build_Owner</option>
+              <option value="Devel_Owner">Devel_Owner</option>
+            </FormControl>
           </Col>
         </Row>
         <Row>

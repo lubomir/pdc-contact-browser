@@ -323,10 +323,10 @@ module.exports = React.createClass({
               <LoadForm releases={this.state.releases} roles={this.state.roles} release_spinning={this.state.release_spinning} role_spinning={this.state.role_spinning} params={this.state.params} resource={this.state.resource} onSubmit={this.handleFormSubmit} inputChange={this.handleInputChange}/>
             </Col>
             <Col md={9} className="rightCol">
-              <Pager count={this.state.count} showresult={this.state.showresult} page={this.state.page} page_size={this.state.page_size} onPageChange={this.handlePageChange} />
-              <Browser data={this.state.data} showresult={this.state.showresult} onSelectContact={this.onSelectContact}/>
               <TableToolbar showresult={this.state.showresult} releases={this.state.releases} roles={this.state.roles} contacts={this.state.contacts} resource={this.state.resource} params={this.state.params}
                 onUpdate={this.updateData} selectedContact={this.state.selectedContact} clearSelectedContact={this.clearSelectedContact}/>
+              <Browser data={this.state.data} showresult={this.state.showresult} onSelectContact={this.onSelectContact}/>
+              <Pager count={this.state.count} showresult={this.state.showresult} page={this.state.page} page_size={this.state.page_size} onPageChange={this.handlePageChange} />
             </Col>
           </Row>
           <Spinner enabled={this.state.busy} />
