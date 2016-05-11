@@ -389,9 +389,8 @@ var Spinner_loader = React.createClass({
 });
 
 var Pager = React.createClass({
-    handlePageChange: function (event, selectedEvent) {
-        event.preventDefault()
-        this.props.onPageChange(selectedEvent.eventKey);
+    handlePageChange: function (eventKey) {
+      this.props.onPageChange(eventKey);
     },
     render: function () {
         if (this.props.count == 0 || !this.props.showresult) {
@@ -664,7 +663,7 @@ var Browser = React.createClass({
     }
 });
 
-React.render(
+ReactDOM.render(
     <Router history={createHistory({ queryKey: false })}>
         <Route path="/" component={ ContactBrowserApp } />
         <Route path="/release-component-contacts/" component={ ContactBrowserApp } />
