@@ -23,8 +23,8 @@ module.exports = React.createClass({
   updateRelease: function(value) {
     this.setState({ 'release': value.trim() });
   },
-  updateContact: function(value, item) {
-    this.setState({ 'contact': item[0].value.trim() });
+  updateContact: function(value) {
+    this.setState({ 'contact': value.trim() });
   },
   updateRole: function(event) {
     this.setState({ 'role': event.target.value.trim() });
@@ -129,6 +129,13 @@ module.exports = React.createClass({
       _this.setState({ 'enableSaveBtn': true });
     });
   },
+  getUniqueArray: function(arr) {
+    var result = [];
+    $.each(arr, function(i, item) {
+        if ($.inArray(item, result) == -1) result.push(item);
+    });
+    return result;
+  },
   render: function () {
     if (this.props.roles[0] == "all") {
       this.props.roles.shift();
@@ -149,8 +156,9 @@ module.exports = React.createClass({
       converted_people.push(people[idx].username + " <" + people[idx].email + ">");
     }
     this.converted_people = converted_people;
-    var contactList = converted_mailinglists.concat(converted_people).map(function(contact, index) {
-      return { 'value': contact, 'label': contact, 'index': index };
+    var finalContact = this.getUniqueArray(converted_mailinglists.concat(converted_people));
+    var contactList = finalContact.map(function(contact) {
+      return { 'value': contact, 'label': contact };
     });
     var releaseList = this.props.releases.map(function(release) {
       return { 'value': release, 'label': release };
@@ -166,7 +174,7 @@ module.exports = React.createClass({
             <Select placeholder="Release" name="field_release" value={this.state.release} clearable={false} options={releaseList} onChange={this.updateRelease}/>
           </Col>
           <Col md={6}>
-            <Select placeholder="Contact" valueKey="index" value={this.state.contact} clearable={false} options={contactList} onChange={this.updateContact}/>
+            <Select placeholder="Contact" value={this.state.contact} clearable={false} options={contactList} onChange={this.updateContact}/>
           </Col>
           <Col md={2}>
             <FormControl componentClass="select" value={this.state.role} onChange={this.updateRole}>
