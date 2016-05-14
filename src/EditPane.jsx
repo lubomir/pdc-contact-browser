@@ -2,6 +2,7 @@
 
 var React = require('react');
 var Select = require('react-select');
+var $ = require('jquery');
 import {Row, Col, Tab, Nav, NavItem, FormGroup, ControlLabel, FormControl, ButtonGroup, Button, Glyphicon, Alert, Fade} from 'react-bootstrap';
 
 module.exports = React.createClass({
@@ -14,23 +15,55 @@ module.exports = React.createClass({
       'release': '',
       'contact': '',
       'role': '',
-      'enableSaveBtn': true
+      'enableContactSelect': false,
+      'enableRoleSelect': false,
+      'enableSaveBtn': false
     };
   },
-  updateCmp: function(event) {
-    this.setState({ 'cmp': event.target.value.trim() });
+  componentDidMount: function(){
+    var _this = this;
+    $('.rightCol').on('selectContact', function(event, data) {
+      if (data === '') {
+        _this.setState({
+          'cmp': '',
+          'release': '',
+          'contact': '',
+          'role': '',
+          'enableContactSelect': false,
+          'enableRoleSelect': false
+        });
+      } else {
+        _this.setState({
+          'cmp': data.component,
+          'release': data.release,
+          'contact': data.contact,
+          'role': data.role,
+          'enableContactSelect': true,
+          'enableRoleSelect': true
+        });
+        _this.initVal = { 'contact': data.contact, 'role': data.role, 'url': data.url };
+      }
+    });
   },
-  updateRelease: function(value) {
-    this.setState({ 'release': value.trim() });
+  componentWillUnmount: function () {
+    $('.rightCol').off('selectContact');
   },
-  updateContact: function(value) {
-    this.setState({ 'contact': value.trim() });
+  updateFieldContact: function(value) {
+    this.setState({ 'contact': value.trim(), 'enableSaveBtn': (value.trim() !== this.initVal.contact) ? true : false });
   },
-  updateRole: function(event) {
-    this.setState({ 'role': event.target.value.trim() });
+  updateFieldRole: function(event) {
+    this.setState({ 'role': event.target.value.trim(), 'enableSaveBtn': (event.target.value.trim() !== this.initVal.role) ? true : false });
   },
   restoreDefaults: function() {
-    this.setState({ 'cmp': '', 'release': '', 'contact': '', 'role': '' });
+    this.setState({
+      'cmp': '',
+      'release': '',
+      'contact': '',
+      'role': '',
+      'enableContactSelect': false,
+      'enableRoleSelect': false,
+      'enableSaveBtn': false
+    });
   },
   closePane: function() {
     this.restoreDefaults();
@@ -48,21 +81,19 @@ module.exports = React.createClass({
       this.setState({ 'message': msg, 'showMessage': true });
     }
   },
-  validateNewData: function() {
+  validateData: function() {
     var _this = this;
     var newData = [
-      { 'name': 'cmp', 'value': this.state.cmp },
-      { 'name': 'release', 'value': this.state.release },
       { 'name': 'contact', 'value': this.state.contact },
       { 'name': 'role', 'value': this.state.role }
     ];
 
     var failed = newData.some(function(item) {
       if(!item.value.length) {
-          _this.setState({ 'message': (item.name === 'cmp' ? 'Component' : item.name) + ' is required.' }, function() {
-            _this.setState({ 'showMessage': true });
-          });
-          return true;
+        _this.setState({ 'message': item.name + ' is required.' }, function() {
+          _this.setState({ 'showMessage': true });
+        });
+        return true;
       }
     });
 
@@ -71,9 +102,9 @@ module.exports = React.createClass({
     }
     return !failed;
   },
-  addContact: function() {
+  updateContact: function() {
     var _this = this;
-    if (!this.validateNewData()) {
+    if (!this.validateData()) {
       return;
     } else {
       this.setState({ 'enableSaveBtn': false });
@@ -85,33 +116,30 @@ module.exports = React.createClass({
       'role': this.state.role
     };
     var data = {};
-    var url = localStorage.getItem('server');
-    data["role"] = row["role"];
-    if (row["release"] == "global") {
-      data["component"] = row["component"];
-      url = url + "global-component-contacts/";
+    data['role'] = row['role'];
+    if (row['release'] == 'global') {
+      data['component'] = row['component'];
     }
     else {
-      data["component"] = {"name": row["component"], "release": row["release"]};
-      url = url + "release-component-contacts/";
+      data['component'] = {'name': row['component'], 'release': row['release']};
     }
-    var arr = row["contact"].split("<");
+    var arr = row['contact'].split('<');
     var name = arr[0].trim();
-    var email = arr[1].replace(">", "").trim();
-    if ($.inArray(row["contact"], this.converted_mailinglists) >= 0) {
-      data["contact"] = {"mail_name": name, "email": email};
+    var email = arr[1].replace('>', '').trim();
+    if ($.inArray(row['contact'], this.converted_mailinglists) >= 0) {
+      data['contact'] = { 'mail_name': name, 'email': email };
     }
     else if ($.inArray(row["contact"], this.converted_people) >= 0) {
-      data["contact"] = {"username": name, "email": email};
+      data['contact'] = { 'username': name, 'email': email };
     }
     else {
       this.displayMessage('Something wrong with the contacts');
     }
     $.ajax({
-      url: url,
-      dataType: "json",
+      url: this.initVal.url,
+      dataType: 'json',
       contentType: 'application/json',
-      method: "POST",
+      method: 'PUT',
       data: JSON.stringify(data),
       beforeSend: function (xhr) {
         xhr.setRequestHeader('Authorization', 'Token ' + localStorage.getItem('token'));
@@ -119,14 +147,14 @@ module.exports = React.createClass({
     })
     .done(function (response) {
       _this.props.onUpdate(_this.props.resource, _this.props.params);
-      _this.displayMessage('Record is created successfully on server.', 3000);
+      _this.displayMessage('Record is updated successfully on server side.', 3000);
       _this.restoreDefaults();
     })
     .fail(function (response) {
       _this.displayMessage(response.responseText);
     })
     .always(function() {
-      _this.setState({ 'enableSaveBtn': true });
+      _this.setState({ 'enableRoleSelect': false, 'enableSaveBtn': false });
     });
   },
   getUniqueArray: function(arr) {
@@ -168,16 +196,16 @@ module.exports = React.createClass({
       <div>
         <Row>
           <Col md={3}>
-            <FormControl type="text" value={this.state.cmp} placeholder="Component" onChange={this.updateCmp} />
+            <FormControl ref="cmp" type="text" placeholder="Component" value={this.state.cmp} disabled="true"/>
           </Col>
           <Col md={2}>
-            <Select placeholder="Release" name="field_release" value={this.state.release} clearable={false} options={releaseList} onChange={this.updateRelease}/>
+            <FormControl ref="release" type="text" placeholder="Release" value={this.state.release} disabled="true"/>
           </Col>
           <Col md={5}>
-            <Select placeholder="Contact" value={this.state.contact} clearable={false} options={contactList} onChange={this.updateContact}/>
+            <Select ref="contact" placeholder="Contact" value={this.state.contact} clearable={false} options={contactList} disabled={!this.state.enableContactSelect} onChange={this.updateFieldContact}/>
           </Col>
           <Col md={2}>
-            <FormControl componentClass="select" value={this.state.role} onChange={this.updateRole}>
+            <FormControl ref="role" componentClass="select" value={this.state.role} disabled={!this.state.enableRoleSelect} onChange={this.updateFieldRole}>
               <option value="" defaultValue disabled>Contact Role</option>
               <option value="QE_Group">QE_Group</option>
               <option value="QE_Leader">QE_Leader</option>
@@ -197,7 +225,7 @@ module.exports = React.createClass({
           </Col>
           <Col md={2}>
             <ButtonGroup bsSize="small" justified>
-              <Button href="#" bsStyle="success" onClick={this.addContact} disabled={!this.state.enableSaveBtn}>Save</Button>
+              <Button href="#" bsStyle="success" onClick={this.updateContact} disabled={!this.state.enableSaveBtn}>Save</Button>
               <Button href="#" onClick={this.closePane}>Cancel</Button>
             </ButtonGroup>
           </Col>
