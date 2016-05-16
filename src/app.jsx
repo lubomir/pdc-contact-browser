@@ -209,13 +209,21 @@ module.exports = React.createClass({
 
     this.setState({resource: resource, params: params, page: 1, showresult: true}, this.loadData);
     },
-    updateData: function (resource, params) {
-      this.setState({resource: resource, params: params, showresult: true}, this.loadData);
+    updateData: function (resource, params, showLastPage) {
+      this.setState({resource: resource, params: params, showresult: true}, this.loadData(showLastPage));
     },
-    loadData: function () {
+    loadData: function (showLastPage) {
       this.setState({busy: true});
       var data = JSON.parse(JSON.stringify(this.state.params));
-      data["page"] = this.state.page;
+      if (this.state.count !== 0 && showLastPage) {
+        if (this.state.count % this.state.page_size) {
+          data["page"] = Math.ceil(this.state.count / this.state.page_size);
+        } else {
+          data["page"] = (this.state.count / this.state.page_size) + 1;
+        }
+      } else {
+        data["page"] = this.state.page;
+      }
       data["page_size"] = this.state.page_size;
       $.ajax({
         url: this.state.url + this.state.resource,
