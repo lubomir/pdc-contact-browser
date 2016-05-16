@@ -65,7 +65,7 @@ module.exports = React.createClass({
       root: root,
       resource: resource,
       contacts: {},
-      selectedContact: ''
+      selectedContact: {}
     };
   },
   componentDidMount: function() {
@@ -309,11 +309,12 @@ module.exports = React.createClass({
     clearError: function () {
       this.setState({error: {}});
     },
-    onSelectContact: function(contactUrl) {
-      this.setState({ 'selectedContact': contactUrl });
+    onSelectContact: function(contact) {
+      this.setState({ 'selectedContact': contact });
+      $('.rightCol').trigger('selectContact', [contact]);
     },
     clearSelectedContact: function() {
-      this.setState({ 'selectedContact': '' });
+      this.setState({ 'selectedContact': {} });
     },
     render: function () {
       return (

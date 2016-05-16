@@ -21,7 +21,7 @@ module.exports = React.createClass({
         bgColor: "rgb(238, 193, 213)",
         onSelect: function (row, isSelected){
           if (isSelected) {
-            _this.props.onSelectContact(row.url);
+            _this.props.onSelectContact(row);
           } else {
             _this.props.onSelectContact('');
           }

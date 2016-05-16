@@ -2,6 +2,7 @@
 
 var React = require('react');
 var NewPane = require('./NewPane.jsx');
+var EditPane = require('./EditPane.jsx');
 import {Row, Col, Tab, Nav, NavItem, Glyphicon, Alert} from 'react-bootstrap';
 
 module.exports = React.createClass({
@@ -22,14 +23,14 @@ module.exports = React.createClass({
   },
   deleteContact: function() {
     var _this = this;
-    if (!this.props.selectedContact.length) {
+    if (!this.props.selectedContact.url.length) {
       this.setState({ 'delMessageType': 'danger', 'delMessage': 'Please select one contact firstly.' });
       return;
     } else {
       this.setState({ 'enableDelBtn': false });
     }
     $.ajax({
-      url: this.props.selectedContact,
+      url: this.props.selectedContact.url,
       method: 'DELETE',
       beforeSend: function (xhr) {
         xhr.setRequestHeader('Authorization', 'Token ' + localStorage.getItem('token'));
@@ -61,6 +62,9 @@ module.exports = React.createClass({
                 <NavItem eventKey="new">
                   <Glyphicon glyph="plus" /> New
                 </NavItem>
+                <NavItem eventKey="edit">
+                  <Glyphicon glyph="pencil" /> Edit
+                </NavItem>
                 <NavItem eventKey="delete" onClick={this.deleteContact} disabled={!this.state.enableDelBtn}>
                   <Glyphicon glyph="trash" /> Delete
                 </NavItem>
@@ -70,6 +74,11 @@ module.exports = React.createClass({
                   <NewPane releases={this.props.releases} roles={this.props.roles} 
                   contacts={this.props.contacts} resource={this.props.resource} 
                   params={this.props.params} onUpdate={this.props.onUpdate} hidePanel={this.hidePanel} />
+                </Tab.Pane>
+                <Tab.Pane eventKey="edit">
+                  <EditPane releases={this.props.releases} roles={this.props.roles}
+                    contacts={this.props.contacts} resource={this.props.resource}
+                    params={this.props.params} onUpdate={this.props.onUpdate} hidePanel={this.hidePanel} />
                 </Tab.Pane>
                 <Tab.Pane eventKey="delete">
                   <Alert bsStyle={this.state.delMessageType}>
