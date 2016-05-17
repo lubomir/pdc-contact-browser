@@ -118,7 +118,7 @@ module.exports = React.createClass({
       }
     })
     .done(function (response) {
-      _this.props.onUpdate(_this.props.resource, _this.props.params);
+      _this.props.onUpdate(_this.props.resource, _this.props.params, true);
       _this.displayMessage('Record is created successfully on server.', 3000);
       _this.restoreDefaults();
     })
