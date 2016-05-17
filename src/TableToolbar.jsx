@@ -23,7 +23,7 @@ module.exports = React.createClass({
   },
   deleteContact: function() {
     var _this = this;
-    if (!this.props.selectedContact.url.length) {
+    if (!this.props.selectedContact.url) {
       this.setState({ 'delMessageType': 'danger', 'delMessage': 'Please select one contact firstly.' });
       return;
     } else {
