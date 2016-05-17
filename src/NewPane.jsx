@@ -9,7 +9,7 @@ module.exports = React.createClass({
     return {
       'showMessage': false,
       'message': '',
-      'messageType': 'danger',
+      'messageType': '',
       'cmp': '',
       'release': '',
       'contact': '',
@@ -41,11 +41,11 @@ module.exports = React.createClass({
     if (duration) {
       this.setState({ 'message': msg, 'showMessage': true, 'messageType': 'success' }, function() {
         setTimeout(function() {
-          _this.setState({ 'messageType': 'danger', 'showMessage': false });
+          _this.setState({ 'showMessage': false });
         }, duration);
       });
     } else {
-      this.setState({ 'message': msg, 'showMessage': true });
+      this.setState({ 'message': msg, 'showMessage': true, 'messageType': 'danger' });
     }
   },
   validateNewData: function() {
@@ -59,15 +59,13 @@ module.exports = React.createClass({
 
     var failed = newData.some(function(item) {
       if(!item.value.length) {
-          _this.setState({ 'message': (item.name === 'cmp' ? 'Component' : item.name) + ' is required.' }, function() {
-            _this.setState({ 'showMessage': true });
-          });
-          return true;
+        _this.setState({ 'message': (item.name === 'cmp' ? 'Component' : item.name) + ' is required.' });
+        return true;
       }
     });
 
     if (failed) {
-      this.setState({ 'showMessage': true });
+      this.setState({ 'showMessage': true, 'messageType': 'danger' });
     }
     return !failed;
   },
