@@ -247,6 +247,7 @@ module.exports = React.createClass({
           this.setState({busy: false,
                         data: response.results,
                         count: response.count,
+                        page: data.page,
                         next: response.next,
                         prev: response.prev});
         }.bind(this),
