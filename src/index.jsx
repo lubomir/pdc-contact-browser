@@ -1,3 +1,10 @@
+require('bootstrap/dist/css/bootstrap.css');
+require('./../node_modules/react-bootstrap-table/css/react-bootstrap-table.css');
+require('./../node_modules/react-select/dist/react-select.css');
+require('./../css/spinner.css');
+require('./../css/modal.css');
+require('./../css/app.css');
+
 var React = require('react');
 var ReactDOM = require('react-dom');
 var ReactRouter = require('react-router');

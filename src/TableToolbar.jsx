@@ -4,6 +4,7 @@ var React = require('react');
 var NewPane = require('./NewPane.jsx');
 var EditPane = require('./EditPane.jsx');
 import {Row, Col, Tab, Nav, NavItem, Glyphicon, Alert} from 'react-bootstrap';
+var $ = require('jquery');
 
 module.exports = React.createClass({
   getInitialState: function() {
