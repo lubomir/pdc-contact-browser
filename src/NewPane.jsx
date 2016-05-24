@@ -3,6 +3,7 @@
 var React = require('react');
 var Select = require('react-select');
 import {Row, Col, Tab, Nav, NavItem, FormGroup, ControlLabel, FormControl, ButtonGroup, Button, Glyphicon, Alert, Fade} from 'react-bootstrap';
+var $ = require('jquery');
 
 module.exports = React.createClass({
   getInitialState: function() {
