@@ -10,7 +10,7 @@ module.exports = React.createClass({
     return {
       'showMessage': false,
       'message': '',
-      'messageType': '',
+      'messageType': 'info',
       'cmp': '',
       'release': '',
       'contact': '',
