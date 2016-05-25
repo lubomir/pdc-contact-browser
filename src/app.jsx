@@ -76,7 +76,7 @@ module.exports = React.createClass({
         }
       }
     });
-    $.getJSON( "src/serversetting.json", function( data ) {
+    $.getJSON("serversetting.json", function( data ) {
       localStorage.setItem('server', data['server']);
       self.state.url = data['server'];
       handleData();
