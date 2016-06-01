@@ -59,7 +59,6 @@ module.exports = React.createClass({
     return (
       <Row className="loadForm">
         <Col md={12}>
-          <h2 className="text-center">Contact Browser</h2>
           <form className="form-horizontal" onSubmit={this.handleSubmit}>
             <div className="form-group">
               <label htmlFor="component" className="col-md-12">Component:</label>

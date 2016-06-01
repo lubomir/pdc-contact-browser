@@ -7,6 +7,51 @@ html, body {
 h2 button {
     margin-left: 2em;
 }
+.navbar {
+    position: relative;
+    min-height: 42px;
+    height: 42px;
+    margin-bottom: 0px;
+    margin-left: -20px;
+    border: 1px solid transparent;
+    border-top: 2px solid #cc0000;
+    width:calc(100% + 40px);
+}
+.navbar-brand {
+    position: absolute;
+    left: 20px;
+    padding: 10px 20px;
+    font-size: 18px;
+    line-height: 20px;
+    height: 40px;
+}
+.form-control{
+  height: 30px;
+}
+.Select-control {
+    background-color: #fff;
+    border-color: #d9d9d9 #ccc #b3b3b3;
+    border-radius: 0px;
+    border: 1px solid #ccc;
+    color: #333;
+    cursor: default;
+    display: table;
+    height: 30px!important;
+    outline: none;
+    overflow: hidden;
+    position: relative;
+    width: 100%;
+}
+.Select-input {
+    height: 30px;
+    }
+.Select-placeholder{
+  line-height: 30PX;
+}
+.btn-group-sm>.btn, .btn-sm {
+    padding: 5px 6px;
+    font-size: 12px;
+}
 #app {
   height: 100%;
 }
@@ -60,6 +105,9 @@ h2 button {
 }
 .leftCol {
   background-color: #eee;
+}
+.form-horizontal {
+  margin-top: 20px;
 }
 .react-bs-table {
   margin: 0;
