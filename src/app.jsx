@@ -104,6 +104,19 @@ module.exports = React.createClass({
         self.setState({busy: true, page: Number(page), release_spinning: false, role_spinning: false, showresult: true}, self.loadData);
       }
     }
+
+    $('.wrapper').on('historyChange', function(event, location) {
+      if (location.query.page > 0) {
+        self.setState({
+          'params': location.query,
+          'resource': location.pathname.indexOf('/') === 0 ? location.pathname.slice(1): location.pathname
+        }, function() {
+          self.loadData(parseInt(location.query.page));
+        });
+      } else {
+        self.setState({ showresult: false });
+      }
+    });
   },
   getToken: function (getInitialData) {
     var url = localStorage.getItem('server') + 'auth/token/obtain/';
@@ -207,110 +220,64 @@ module.exports = React.createClass({
       params['role'] = data['role'];
     }
 
-    this.setState({resource: resource, params: params, page: 1, showresult: true}, this.loadData);
+    this.setState({resource: resource, params: params, page: 1, showresult: true}, this.handlePageChange(1));
     },
     updateData: function (resource, params, showLastPage) {
       this.setState({resource: resource, params: params, showresult: true}, this.loadData(showLastPage));
     },
     loadData: function (showLastPage) {
       this.setState({busy: true});
-      var data = JSON.parse(JSON.stringify(this.state.params));
-      if (this.state.count !== 0 && showLastPage) {
-        if (this.state.count % this.state.page_size) {
-          data["page"] = Math.ceil(this.state.count / this.state.page_size);
-        } else {
-          data["page"] = (this.state.count / this.state.page_size) + 1;
-        }
-      } else {
-        data["page"] = this.state.page;
-      }
-      data["page_size"] = this.state.page_size;
       $.ajax({
         url: this.state.url + this.state.resource,
         dataType: "json",
-        data: data,
+        data: this.state.params,
         success: function (response) {
-          var arr = new Array();
-          for (var key in data) {
-            arr.push(key + "=" + data[key]);
-          }
-          var res = this.state.root + this.state.resource + "?" + arr.join("&");
-          var state = {};
-          state['Url'] = res;
-          state['response'] = response;
-          if (window.history.pushState) {
-            window.history.pushState(state, "Url", res);
-          }
-          else {
-            window.location.hash = res;
-          }
-          this.setState({busy: false,
-                        data: response.results,
-                        count: response.count,
-                        page: data.page,
-                        next: response.next,
-                        prev: response.prev});
+          this.setState({
+            busy: false,
+            showresult: true,
+            data: response.results,
+            count: response.count,
+            page: parseInt(this.state.params.page),
+            next: response.next,
+            prev: response.prev}, function() {
+              var params = this.state.params;
+              if (params['component']) {
+                $('#component').val(params['component']);
+              } else {
+                $('#component').val('');
+              }
+              if (params['release']) {
+                $('#release').val(params['release']);
+              } else if (this.state.resource === 'global-component-contacts/') {
+                $('#release').val('global');
+              } else {
+                $('#release').val('all');
+              }
+              if (params['role']) {
+                $('#role').val(params['role']);
+              } else {
+                $('#role').val('all');
+              }
+            }
+          );
         }.bind(this),
         error: function (xhr, status, err) {
           this.displayError(this.state.url, 'GET', xhr, status, err);
         }.bind(this)
       });
-      window.onpopstate = function(event) {
-        var params = {};
-        var resource = null;
-        if (event.state) {
-          var response = event.state['response'];
-          var url = event.state['Url'];
-          var res = url.split("#");
-          if (res[1]) {
-            var inputs = res[1].split("?");
-            resource = inputs[0].replace("/", "");
-            if (inputs[1]) {
-              var arrs = inputs[1].split("&");
-              for (var index in arrs) {
-                var param_arrs = arrs[index].split("=");
-                if (param_arrs[1]) {
-                  params[param_arrs[0]] = param_arrs[1];
-                }
-              }
-            }
-          }
-          this.setState({busy: false,
-                        showresult: true,
-                        data: response.results,
-                        count: response.count,
-                        next: response.next,
-                        prev: response.prev});
-        }
-        else {
-          this.setState({busy: false, showresult: false});
-        }
-        if (params['component']) {
-          $("#component").val(params['component']);
-        }
-        else {
-          $("#component").val("");
-        }
-        if (params['release']) {
-          $("#release").val(params['release']);
-        }
-        else if (resource == "global-component-contacts/") {
-          $("#release").val("global");
-        }
-        else {
-          $("#release").val("all");
-        }
-        if (params['role']) {
-          $("#role").val(params['role']);
-        }
-        else {
-          $("#role").val("all");
-        }
-
-      }.bind(this);
     },
     handlePageChange: function (p) {
-      this.setState({page: p}, this.loadData);
+      var _this = this;
+      this.setState({page: p}, function() {
+        var arr = [];
+        var params = _this.state.params
+        params.page = p;
+        params.page_size = _this.state.page_size;
+        for (var key in params) {
+          arr.push(key + '=' + params[key]);
+        }
+        _this.context.router.push(_this.state.resource + '?' + arr.join('&'));
+      });
     },
     handleInputChange: function () {
       this.setState({url: localStorage.getItem('server')});
@@ -324,6 +291,9 @@ module.exports = React.createClass({
     },
     clearSelectedContact: function() {
       this.setState({ 'selectedContact': {} });
+    },
+    contextTypes: {
+      router: React.PropTypes.object.isRequired
     },
     render: function () {
       return (

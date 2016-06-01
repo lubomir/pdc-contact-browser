@@ -14,12 +14,28 @@ var useRouterHistory = ReactRouter.useRouterHistory;
 var createHashHistory = require('history').createHashHistory;
 var appHistory = useRouterHistory(createHashHistory)({ queryKey: false });
 var App = require('./app.jsx');
+var $ = require('jquery');
+
+var performSearch = function(nextState) {
+  if (nextState.location.action === 'POP') {
+    $('.wrapper').trigger('historyChange', [ nextState.location ]);
+  }
+};
+var returntoInitState = function() {
+  $('.wrapper').trigger('historyChange', [{ 'query': { 'page': 0 }}]);
+};
+var routeChange = function(prevState, nextState) {
+  if ((prevState.location.action === 'PUSH' && nextState.location.action === 'POP')
+    || (prevState.location.search !== nextState.location.search) && nextState.location.action === 'POP') {
+      $('.wrapper').trigger('historyChange', [ nextState.location ]);
+  }
+};
 
 ReactDOM.render(
   <Router history={appHistory}>
     <Route path="/" component={ App } />
-    <Route path="/release-component-contacts/" component={ App } />
-    <Route path="/global-component-contacts/" component={ App } />
+    <Route path="/release-component-contacts/" component={ App } onChange={routeChange} onEnter={performSearch} onLeave={returntoInitState}/>
+    <Route path="/global-component-contacts/" component={ App } onChange={routeChange} onEnter={performSearch} onLeave={returntoInitState}/>
   </Router>,
   document.getElementById('app')
 );
