@@ -3,6 +3,7 @@
 var React = require('react');
 var ReactDOM = require('react-dom');
 var ReactBootstrap = require('react-bootstrap');
+var Navbar = ReactBootstrap.Navbar;
 var Row = ReactBootstrap.Row;
 var Col = ReactBootstrap.Col;
 var $ = require('jquery');
@@ -298,6 +299,13 @@ module.exports = React.createClass({
     render: function () {
       return (
         <div className="container-fluid wrapper">
+          <Navbar inverse>
+            <Navbar.Header>
+              <Navbar.Brand>
+                Contact Browser
+              </Navbar.Brand>
+            </Navbar.Header>
+          </Navbar>
           <Row className="layout">
             <Col md={3} className="leftCol">
               <LoadForm releases={this.state.releases} roles={this.state.roles} release_spinning={this.state.release_spinning} role_spinning={this.state.role_spinning} params={this.state.params} resource={this.state.resource} onSubmit={this.handleFormSubmit} inputChange={this.handleInputChange}/>
