@@ -7,7 +7,7 @@ var Button = ReactBootstrap.Button;
 var ButtonToolbar = ReactBootstrap.ButtonToolbar;
 var Row = ReactBootstrap.Row;
 var Col = ReactBootstrap.Col;
-var SpinnerLoader = require('./SpinnerLoader.jsx');
+var classNames = require('classnames');
 var $ = require('jquery');
 
 module.exports = React.createClass({
@@ -56,36 +56,47 @@ module.exports = React.createClass({
     this.setItem("role");
     var release_spinning = this.props.release_spinning;
     var role_spinning =  this.props.role_spinning;
+
+    var releaseSpinClass = classNames({
+      'fa': true,
+      'fa-refresh': true,
+      'fa-spin': true,
+      'loadingSpinner': true,
+      'hidden': !release_spinning
+    });
+    var roleSpinClass = classNames({
+      'fa': true,
+      'fa-refresh': true,
+      'fa-spin': true,
+      'loadingSpinner': true,
+      'hidden': !role_spinning
+    });
     return (
       <Row className="loadForm">
         <Col md={12}>
           <form className="form-horizontal" onSubmit={this.handleSubmit}>
             <div className="form-group">
               <label htmlFor="component" className="col-md-12">Component:</label>
-              <div className="col-md-10">
+              <div className="col-md-12">
                 <input type="text" className="form-control" id="component" ref="component" onChange={this.handleInputChange}/>
               </div>
             </div>
             <div className="form-group">
               <label htmlFor="release" className="col-md-12">Release:</label>
-              <Col md={10}>
+              <Col md={12}>
                 <select className="form-control" id="release" ref="release" required="required" onChange={this.handleInputChange}>
                   {releases}
                 </select>
-              </Col>
-              <Col md={2}>
-                <SpinnerLoader enabled={release_spinning} />
+                <i className={releaseSpinClass}></i>
               </Col>
             </div>
             <div className="form-group">
               <label htmlFor="role" className="col-md-12">Contact Role:</label>
-              <Col md={10}>
+              <Col md={12}>
                 <select className="form-control" id="role" ref="role" required="required" onChange={this.handleInputChange} >
                   {roles}
                 </select>
-              </Col>
-              <Col md={2}>
-                <SpinnerLoader enabled={role_spinning} />
+                <i className={roleSpinClass}></i>
               </Col>
             </div>
             <div className="form-group">
