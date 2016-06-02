@@ -27,8 +27,8 @@ module.exports = React.createClass({
   updateContact: function(value) {
     this.setState({ 'contact': value.trim() });
   },
-  updateRole: function(event) {
-    this.setState({ 'role': event.target.value.trim() });
+  updateRole: function(value) {
+    this.setState({ 'role': value.trim() });
   },
   restoreDefaults: function() {
     this.setState({ 'cmp': '', 'release': '', 'contact': '', 'role': '' });
@@ -162,6 +162,9 @@ module.exports = React.createClass({
     var releaseList = this.props.releases.map(function(release) {
       return { 'value': release, 'label': release };
     });
+    var roleList = this.props.roles.map(function(role) {
+      return { 'value': role, 'label': role };
+    });
 
     return (
       <div>
@@ -176,17 +179,10 @@ module.exports = React.createClass({
             <Select placeholder="Contact" value={this.state.contact} clearable={false} options={contactList} onChange={this.updateContact}/>
           </Col>
           <Col md={2}>
-            <FormControl componentClass="select" value={this.state.role} onChange={this.updateRole}>
-              <option value="" defaultValue disabled>Contact Role</option>
-              <option value="QE_Group">QE_Group</option>
-              <option value="QE_Leader">QE_Leader</option>
-              <option value="QE_ACK">QE_ACK</option>
-              <option value="Build_Owner">Build_Owner</option>
-              <option value="Devel_Owner">Devel_Owner</option>
-            </FormControl>
+            <Select placeholder="Role" value={this.state.role} clearable={false} options={roleList} onChange={this.updateRole}/>
           </Col>
         </Row>
-        <Row>
+        <Row className="btnsRow">
           <Col md={10}>
             <Fade in={this.state.showMessage}>
               <Alert bsStyle={this.state.messageType}>
