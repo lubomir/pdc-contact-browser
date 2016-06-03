@@ -38,7 +38,7 @@ module.exports = React.createClass({
       }
     })
     .done(function (response) {
-      _this.props.onUpdate(_this.props.resource, _this.props.params);
+      _this.props.onUpdate(_this.props.resource, _this.props.params, 'delete');
       _this.props.clearSelectedContact();
       _this.setState({ 'delMessageType': 'success', 'delMessage': 'Record is deleted successfully on server.'});
     })

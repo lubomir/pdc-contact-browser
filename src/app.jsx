@@ -112,7 +112,7 @@ module.exports = React.createClass({
           'params': location.query,
           'resource': location.pathname.indexOf('/') === 0 ? location.pathname.slice(1): location.pathname
         }, function() {
-          self.loadData(parseInt(location.query.page));
+          self.loadData();
         });
       } else {
         self.setState({ 'params': '', 'resource': '', 'showresult': false });
@@ -223,15 +223,35 @@ module.exports = React.createClass({
 
     this.setState({resource: resource, params: params, page: 1, showresult: true}, this.handlePageChange(1));
     },
-    updateData: function (resource, params, showLastPage) {
-      this.setState({resource: resource, params: params, showresult: true}, this.loadData(showLastPage));
+    updateData: function (resource, params, crud) {
+      var availablePage = params.page;
+      if (crud === 'create') {
+        if (this.state.count % this.state.page_size) {
+          availablePage = Math.ceil(this.state.count / this.state.page_size);
+        } else {
+          availablePage = (this.state.count / this.state.page_size) + 1;
+        }
+      } else if (crud === 'delete' ) {
+        if (this.state.count % this.state.page_size === 1) {
+          availablePage = params.page -1;
+        }
+      }
+      if (availablePage !== params.page) {
+        this.handlePageChange(availablePage);
+      } else {
+        this.loadData(availablePage);
+      }
     },
-    loadData: function (showLastPage) {
+    loadData: function (page) {
       this.setState({busy: true});
+      var data = $.extend({}, this.state.params);
+      if (page) {
+        data.page = page;
+      }
       $.ajax({
         url: this.state.url + this.state.resource,
         dataType: "json",
-        data: this.state.params,
+        data: data,
         success: function (response) {
           this.setState({
             busy: false,
@@ -271,7 +291,7 @@ module.exports = React.createClass({
       var _this = this;
       this.setState({page: p}, function() {
         var arr = [];
-        var params = _this.state.params
+        var params = _this.state.params;
         params.page = p;
         params.page_size = _this.state.page_size;
         for (var key in params) {
@@ -314,7 +334,7 @@ module.exports = React.createClass({
               <TableToolbar showresult={this.state.showresult} releases={this.state.releases} roles={this.state.roles} contacts={this.state.contacts} resource={this.state.resource} params={this.state.params}
                 onUpdate={this.updateData} selectedContact={this.state.selectedContact} clearSelectedContact={this.clearSelectedContact}/>
               <Browser data={this.state.data} showresult={this.state.showresult} onSelectContact={this.onSelectContact}/>
-              <Pager count={this.state.count} showresult={this.state.showresult} page={this.state.page} page_size={this.state.page_size} onPageChange={this.handlePageChange} />
+              <Pager count={this.state.count} showresult={this.state.showresult} page={this.state.page} page_size={this.state.page_size} onPageChange={this.handlePageChange} reloadPage={this.loadData} />
             </Col>
           </Row>
           <Spinner enabled={this.state.busy} />
