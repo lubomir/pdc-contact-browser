@@ -51,8 +51,8 @@ module.exports = React.createClass({
   updateFieldContact: function(value) {
     this.setState({ 'contact': value.trim(), 'enableSaveBtn': (value.trim() !== this.initVal.contact) ? true : false });
   },
-  updateFieldRole: function(event) {
-    this.setState({ 'role': event.target.value.trim(), 'enableSaveBtn': (event.target.value.trim() !== this.initVal.role) ? true : false });
+  updateFieldRole: function(value) {
+    this.setState({ 'role': value.trim(), 'enableSaveBtn': (value.trim() !== this.initVal.role) ? true : false });
   },
   restoreDefaults: function() {
     this.setState({
@@ -191,6 +191,9 @@ module.exports = React.createClass({
     var releaseList = this.props.releases.map(function(release) {
       return { 'value': release, 'label': release };
     });
+    var roleList = this.props.roles.map(function(role) {
+      return { 'value': role, 'label': role };
+    });
 
     return (
       <div>
@@ -205,17 +208,10 @@ module.exports = React.createClass({
             <Select ref="contact" placeholder="Contact" value={this.state.contact} clearable={false} options={contactList} disabled={!this.state.enableContactSelect} onChange={this.updateFieldContact}/>
           </Col>
           <Col md={2}>
-            <FormControl ref="role" componentClass="select" value={this.state.role} disabled={!this.state.enableRoleSelect} onChange={this.updateFieldRole}>
-              <option value="" defaultValue disabled>Contact Role</option>
-              <option value="QE_Group">QE_Group</option>
-              <option value="QE_Leader">QE_Leader</option>
-              <option value="QE_ACK">QE_ACK</option>
-              <option value="Build_Owner">Build_Owner</option>
-              <option value="Devel_Owner">Devel_Owner</option>
-            </FormControl>
+            <Select placeholder="Role" value={this.state.role} clearable={false} options={roleList} disabled={!this.state.enableRoleSelect} onChange={this.updateFieldRole}/>
           </Col>
         </Row>
-        <Row>
+        <Row className="btnsRow">
           <Col md={10}>
             <Fade in={this.state.showMessage}>
               <Alert bsStyle={this.state.messageType}>

@@ -121,7 +121,7 @@ h2 button {
 }
 
 #table-toolbar {
-  margin-top: 10px;
+  margin-top: 20px;
   margin-bottom: 20px;
 }
 #table-toolbar>ul>li>a {
@@ -143,6 +143,9 @@ h2 button {
 #table-toolbar .alert {
   padding: 5px;
   margin-bottom: 0px;
+}
+#table-toolbar .btnsRow {
+  margin-top: 20px;
 }
 input[name=field_release]~.Select-menu-outer {
   width: 220px;

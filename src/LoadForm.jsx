@@ -8,6 +8,7 @@ var ButtonToolbar = ReactBootstrap.ButtonToolbar;
 var Row = ReactBootstrap.Row;
 var Col = ReactBootstrap.Col;
 var classNames = require('classnames');
+var Select = require('react-select');
 var $ = require('jquery');
 
 module.exports = React.createClass({
@@ -15,17 +16,13 @@ module.exports = React.createClass({
     e.preventDefault();
     var data = {
       'component': ReactDOM.findDOMNode(this.refs.component).value.trim(),
-      'release': ReactDOM.findDOMNode(this.refs.release).value,
-      'role': ReactDOM.findDOMNode(this.refs.role).value
+      'release': $('input[name="query_release"]').val(),
+      'role': $('input[name="query_role"]').val()
     };
     this.props.onSubmit(data);
   },
   handleInputChange: function () {
     this.props.inputChange();
-  },
-  setItem: function (item) {
-    var value = (this.props.params[item]) ? this.props.params[item]:"all";
-    $("#" + item +" option[value='" + value + "']").attr('selected','selected');
   },
   render: function () {
     var rel = this.props.releases;
@@ -35,25 +32,28 @@ module.exports = React.createClass({
     if ($.inArray("all", rel) < 0) {
       rel.unshift("all");
     }
-    var releases = rel.map(function (val) {
-      return <option key={val} value={val}>{val}</option>;
+    var releaseList = rel.map(function(release) {
+      return { 'value': release, 'label': release };
     });
     var r = this.props.roles;
     if ($.inArray("all", r) < 0) {
       r.unshift("all");
     }
-    var roles = r.map(function (val) {
-      return <option key={val} value={val}>{val}</option>;
+    var roleList = r.map(function(role) {
+      return { 'value': role, 'label': role };
     });
     var component = (this.props.params['component']) ? this.props.params['component']:"";
     $("#component").attr("value", component);
+    var initRelease = '';
     if (this.props.resource == "global-component-contacts/") {
-      $("#release option[value='global']").attr('selected','selected');
+      initRelease = 'global';
     }
-    else {
-      this.setItem("release");
+    else if (this.props.params['release']) {
+      initRelease = this.props.params['release'];
+    } else {
+      initRelease = 'all';
     }
-    this.setItem("role");
+    var initRole = (this.props.params['role']) ? this.props.params['role'] : 'all';
     var release_spinning = this.props.release_spinning;
     var role_spinning =  this.props.role_spinning;
 
@@ -84,18 +84,14 @@ module.exports = React.createClass({
             <div className="form-group">
               <label htmlFor="release" className="col-md-12">Release:</label>
               <Col md={12}>
-                <select className="form-control" id="release" ref="release" required="required" onChange={this.handleInputChange}>
-                  {releases}
-                </select>
+                <Select name="query_release" value={initRelease} clearable={false} options={releaseList}/>
                 <i className={releaseSpinClass}></i>
               </Col>
             </div>
             <div className="form-group">
               <label htmlFor="role" className="col-md-12">Contact Role:</label>
               <Col md={12}>
-                <select className="form-control" id="role" ref="role" required="required" onChange={this.handleInputChange} >
-                  {roles}
-                </select>
+                <Select name="query_role" value={initRole} clearable={false} options={roleList}/>
                 <i className={roleSpinClass}></i>
               </Col>
             </div>

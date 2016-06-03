@@ -115,7 +115,7 @@ module.exports = React.createClass({
           self.loadData(parseInt(location.query.page));
         });
       } else {
-        self.setState({ showresult: false });
+        self.setState({ 'params': '', 'resource': '', 'showresult': false });
       }
     });
   },
