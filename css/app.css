@@ -31,9 +31,9 @@ h2 button {
 .loadingSpinner {
   position: absolute;
   top: 2px;
-  right: 40px;
+  right: 50px;
   font-size: 24px;
-  color: #aaa;
+  color: rgba(0,136,206,0.5);
 }
 .Select-control {
     background-color: #fff;
@@ -82,8 +82,6 @@ h2 button {
 }
 .overlay {
     position: fixed;
-    width: 2em;
-    height: 2em;
     top: 0;
     left: 0;
     right: 0;
@@ -91,14 +89,23 @@ h2 button {
     z-index: 100;
     margin: auto;
 }
-.overlay:before {
-    content: '';
-    background: rgba(50, 50, 50, 0.2);
-    position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
+#browser-wrapper {
+  position: relative;
+}
+#browser-wrapper .fa-spin {
+  font-size: 72px;
+  color: rgba(0,136,206,0.5);
+  position: absolute;
+  top: calc(50% - 23px);
+  left: calc(50% - 36px);
+}
+#browser-wrapper .fa-spin.global-spin {
+  top: 200px;
+  left: calc(50% - 36px);
+}
+.react-bs-table-no-data {
+  height: 128px;
+  vertical-align: middle!important;
 }
 .layout {
   display: -webkit-box;

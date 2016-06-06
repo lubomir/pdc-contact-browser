@@ -13,7 +13,7 @@ var TableToolbar = require('./TableToolbar.jsx');
 var Browser = require('./Browser.jsx');
 var Pager = require('./Pager.jsx');
 var NetworkErrorDialog = require('./NetworkErrorDialog.jsx');
-var Spinner = require('./Spinner.jsx');
+var classNames = require('classnames');
 
 module.exports = React.createClass({
   getInitialState: function () {
@@ -317,6 +317,17 @@ module.exports = React.createClass({
       router: React.PropTypes.object.isRequired
     },
     render: function () {
+      var overlayClass = classNames({
+        'overlay': true,
+        'hidden': !this.state.busy
+      });
+      var browserSpinnerClass = classNames({
+        'fa': true,
+        'fa-refresh': true,
+        'fa-spin': true,
+        'hidden': !this.state.busy,
+        'global-spin': !this.state.showresult
+      });
       return (
         <div className="container-fluid wrapper">
           <Navbar inverse>
@@ -333,11 +344,14 @@ module.exports = React.createClass({
             <Col md={9} className="rightCol">
               <TableToolbar showresult={this.state.showresult} releases={this.state.releases} roles={this.state.roles} contacts={this.state.contacts} resource={this.state.resource} params={this.state.params}
                 onUpdate={this.updateData} selectedContact={this.state.selectedContact} clearSelectedContact={this.clearSelectedContact}/>
-              <Browser data={this.state.data} showresult={this.state.showresult} onSelectContact={this.onSelectContact}/>
+              <div id="browser-wrapper">
+                <i className={browserSpinnerClass}></i>
+                <Browser id="erer" data={this.state.data} showresult={this.state.showresult} onSelectContact={this.onSelectContact}/>
+              </div>
               <Pager count={this.state.count} showresult={this.state.showresult} page={this.state.page} page_size={this.state.page_size} onPageChange={this.handlePageChange} reloadPage={this.loadData} />
             </Col>
           </Row>
-          <Spinner enabled={this.state.busy} />
+          <div className={overlayClass}></div>
           <NetworkErrorDialog onClose={this.clearError} data={this.state.error} />
         </div>
       );
