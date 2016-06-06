@@ -8,7 +8,11 @@ var Pagination = ReactBootstrap.Pagination;
 
 module.exports = React.createClass({
   handlePageChange: function (eventKey) {
-    this.props.onPageChange(eventKey);
+    if (eventKey !== this.props.page) {
+      this.props.onPageChange(eventKey);
+    } else {
+      this.props.reloadPage(eventKey);
+    }
   },
   render: function () {
     if (this.props.count == 0 || !this.props.showresult) {
