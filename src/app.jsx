@@ -186,6 +186,7 @@ module.exports = React.createClass({
       }
       else {
         this.displayError(Url, 'GET', xhr, status, err);
+        this.refs.errorDialog.open();
       }
     }.bind(this));
   },
@@ -284,6 +285,7 @@ module.exports = React.createClass({
         }.bind(this),
         error: function (xhr, status, err) {
           this.displayError(this.state.url, 'GET', xhr, status, err);
+          this.refs.errorDialog.open();
         }.bind(this)
       });
     },
@@ -302,9 +304,6 @@ module.exports = React.createClass({
     },
     handleInputChange: function () {
       this.setState({url: localStorage.getItem('server')});
-    },
-    clearError: function () {
-      this.setState({error: {}});
     },
     onSelectContact: function(contact) {
       this.setState({ 'selectedContact': contact });
@@ -352,7 +351,7 @@ module.exports = React.createClass({
             </Col>
           </Row>
           <div className={overlayClass}></div>
-          <NetworkErrorDialog onClose={this.clearError} data={this.state.error} />
+          <NetworkErrorDialog ref='errorDialog' data={this.state.error} />
         </div>
       );
     }

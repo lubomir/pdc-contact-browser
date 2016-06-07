@@ -2,10 +2,19 @@
 
 var React = require('react');
 var ReactDOM = require('react-dom');
+var ReactBootstrap = require('react-bootstrap');
+var Modal = ReactBootstrap.Modal;
+var Button = ReactBootstrap.Button;
 
 module.exports = React.createClass({
-  handleClose: function () {
-    this.props.onClose();
+  getInitialState: function (){
+    return { showModal: false };
+  },
+  open: function (){
+    this.setState({ showModal: true });
+  },
+  close: function () {
+    this.setState({ showModal: false });
   },
   render: function () {
     if (Object.keys(this.props.data).length == 0) {
@@ -22,17 +31,17 @@ module.exports = React.createClass({
       );
     }
     return (
-      <Modal
-        title={title}
-        className="error-dialog"
-        onRequestHide={this.handleClose}>
-        <div className="modal-body">
+      <Modal show={this.state.showModal} className="error-dialog" onHide={this.close}>
+        <Modal.Header closeButton>
+            <Modal.Title>{title}</Modal.Title>
+          </Modal.Header>
+        <Modal.Body>
           <p><b>{this.props.data.method}</b> <code>{this.props.data.url}</code></p>
           {resp}
-        </div>
-        <div className='modal-footer'>
-          <Button onClick={this.handleClose}>Close</Button>
-        </div>
+        </Modal.Body>
+        <Modal.Footer>
+          <Button onClick={this.close}>Close</Button>
+        </Modal.Footer>
       </Modal>
     );
   }
