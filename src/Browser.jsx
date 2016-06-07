@@ -18,7 +18,7 @@ module.exports = React.createClass({
       var selectRowProp = {
         mode: "radio",
         clickToSelect: true,
-        bgColor: "rgb(238, 193, 213)",
+        bgColor: "#def3ff",
         onSelect: function (row, isSelected){
           if (isSelected) {
             _this.props.onSelectContact(row);

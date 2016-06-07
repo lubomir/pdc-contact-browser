@@ -41,7 +41,7 @@ module.exports = React.createClass({
           'enableContactSelect': true,
           'enableRoleSelect': true
         });
-        _this.initVal = { 'contact': data.contact, 'role': data.role, 'url': data.url };
+        _this.targetUrl =  data.url;
       }
     });
   },
@@ -49,10 +49,10 @@ module.exports = React.createClass({
     $('.rightCol').off('selectContact');
   },
   updateFieldContact: function(value) {
-    this.setState({ 'contact': value.trim(), 'enableSaveBtn': (value.trim() !== this.initVal.contact) ? true : false });
+    this.setState({ 'contact': value.trim(), 'enableSaveBtn': (value.trim() !== this.state.contact) ? true : false });
   },
   updateFieldRole: function(value) {
-    this.setState({ 'role': value.trim(), 'enableSaveBtn': (value.trim() !== this.initVal.role) ? true : false });
+    this.setState({ 'role': value.trim(), 'enableSaveBtn': (value.trim() !== this.state.role) ? true : false });
   },
   restoreDefaults: function() {
     this.setState({
@@ -136,7 +136,7 @@ module.exports = React.createClass({
       this.displayMessage('Something wrong with the contacts');
     }
     $.ajax({
-      url: this.initVal.url,
+      url: this.targetUrl,
       dataType: 'json',
       contentType: 'application/json',
       method: 'PUT',
@@ -148,13 +148,12 @@ module.exports = React.createClass({
     .done(function (response) {
       _this.props.onUpdate(_this.props.resource, _this.props.params, 'update');
       _this.displayMessage('Record is updated successfully on server side.', 3000);
-      _this.restoreDefaults();
     })
     .fail(function (response) {
       _this.displayMessage(response.responseText);
     })
     .always(function() {
-      _this.setState({ 'enableRoleSelect': false, 'enableSaveBtn': false });
+      _this.setState({ 'enableSaveBtn': false });
     });
   },
   getUniqueArray: function(arr) {
