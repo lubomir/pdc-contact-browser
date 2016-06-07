@@ -41,7 +41,7 @@ module.exports = React.createClass({
           'enableContactSelect': true,
           'enableRoleSelect': true
         });
-        _this.initVal = { 'contact': data.contact, 'role': data.role, 'url': data.url };
+        _this.targetUrl =  data.url;
       }
     });
   },
@@ -49,10 +49,10 @@ module.exports = React.createClass({
     $('.rightCol').off('selectContact');
   },
   updateFieldContact: function(value) {
-    this.setState({ 'contact': value.trim(), 'enableSaveBtn': (value.trim() !== this.initVal.contact) ? true : false });
+    this.setState({ 'contact': value.trim(), 'enableSaveBtn': (value.trim() !== this.state.contact) ? true : false });
   },
   updateFieldRole: function(value) {
-    this.setState({ 'role': value.trim(), 'enableSaveBtn': (value.trim() !== this.initVal.role) ? true : false });
+    this.setState({ 'role': value.trim(), 'enableSaveBtn': (value.trim() !== this.state.role) ? true : false });
   },
   restoreDefaults: function() {
     this.setState({
@@ -136,7 +136,7 @@ module.exports = React.createClass({
       this.displayMessage('Something wrong with the contacts');
     }
     $.ajax({
-      url: this.initVal.url,
+      url: this.targetUrl,
       dataType: 'json',
       contentType: 'application/json',
       method: 'PUT',
@@ -153,7 +153,7 @@ module.exports = React.createClass({
       _this.displayMessage(response.responseText);
     })
     .always(function() {
-      _this.setState({ 'enableRoleSelect': false, 'enableSaveBtn': false });
+      _this.setState({ 'enableSaveBtn': false });
     });
   },
   getUniqueArray: function(arr) {
