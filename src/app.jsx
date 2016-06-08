@@ -136,6 +136,7 @@ module.exports = React.createClass({
     x.send();
   },
   getInitialData: function (token) {
+    var _this = this;
     $.ajaxSetup({
       beforeSend: function (xhr) {
         xhr.setRequestHeader('Authorization', 'Token ' + token);
@@ -145,31 +146,47 @@ module.exports = React.createClass({
     var roles = [];
     var mailinglists = [];
     var people = [];
-    var param = {};
-    param["page_size"] = -1;
+    var param = { 'page_size': -1 };
     var Url = localStorage.getItem('server');
     $.when(
-      $.getJSON(Url + "releases/", param, function (response) {
-        for (var idx in response) {
-          releases.push(response[idx].release_id)
-        }
-      }),
-      $.getJSON(Url + "contact-roles/", param, function (response) {
-        for (var idx in response) {
-          roles.push(response[idx].name);
-        }
-      }),
-      $.getJSON(Url + "contacts/mailing-lists/", param, function (response) {
-        mailinglists = response;
-      }),
-      $.getJSON(Url + "contacts/people/", param, function (response) {
-        people = response;
-      })
-    ).then( function () {
+      $.getJSON(Url + "releases/", param)
+        .done(function (response) {
+          for (var idx in response) {
+            releases.push(response[idx].release_id)
+          }
+        })
+        .fail(function(jqxhr, textStatus, error) {
+          _this.errorAddress = Url + 'releases/';
+        }),
+      $.getJSON(Url + "contact-roles/", param)
+        .done(function (response) {
+          for (var idx in response) {
+            roles.push(response[idx].name);
+          }
+        })
+        .fail(function(jqxhr, textStatus, error) {
+          _this.errorAddress = Url + 'contact-roles/';
+        }),
+      $.getJSON(Url + "contacts/mailing-lists/", param)
+        .done(function (response) {
+          mailinglists = response;
+        })
+        .fail(function(jqxhr, textStatus, error) {
+          _this.errorAddress = Url + 'contacts/mailing-lists/';
+        }),
+      $.getJSON(Url + "contacts/people/", param)
+        .done(function (response) {
+          people = response;
+        })
+        .fail(function(jqxhr, textStatus, error) {
+          _this.errorAddress = Url + 'contacts/people/';
+        })
+    )
+    .done(function () {
       var contacts = {};
       contacts["mail"] = mailinglists;
       contacts["people"] = people;
-      this.setState({busy: false,
+      _this.setState({busy: false,
                     releases: releases,
                     roles: roles,
                     release_spinning: false,
@@ -177,18 +194,16 @@ module.exports = React.createClass({
                     contacts: contacts});
       localStorage.setItem('releases', releases);
       localStorage.setItem('roles', roles);
-    }.bind(this), function(xhr, status, err) {
-      if (err == "UNAUTHORIZED") {
-        this.setState({busy: true,
-                        release_spinning: false,
-                        role_spinning: false});
-        this.getToken(this.getInitialData);
+    })
+    .fail(function(jqxhr, textStatus, error) {
+      if (error === 'UNAUTHORIZED') {
+        _this.setState({ busy: true, release_spinning: false, role_spinning: false });
+        _this.getToken(_this.getInitialData);
+      } else {
+        _this.displayError(_this.errorAddress, 'GET', jqxhr, textStatus, error);
+        _this.refs.errorDialog.open();
       }
-      else {
-        this.displayError(Url, 'GET', xhr, status, err);
-        this.refs.errorDialog.open();
-      }
-    }.bind(this));
+    });
   },
   displayError: function (url, method, xhr, status, err) {
     console.log(url, status, err);
@@ -284,7 +299,7 @@ module.exports = React.createClass({
           );
         }.bind(this),
         error: function (xhr, status, err) {
-          this.displayError(this.state.url, 'GET', xhr, status, err);
+          this.displayError(this.state.url + this.state.resource, 'GET', xhr, status, err);
           this.refs.errorDialog.open();
         }.bind(this)
       });
