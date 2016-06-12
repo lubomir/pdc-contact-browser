@@ -118,6 +118,11 @@ module.exports = React.createClass({
         self.setState({ 'params': '', 'resource': '', 'showresult': false });
       }
     });
+
+    $('.wrapper').on('dataUpdated', self.updateData);
+  },
+  componentWillUnmount: function () {
+    $('.wrapper').off('historyChange dataUpdated');
   },
   getToken: function (getInitialData) {
     var url = localStorage.getItem('server') + 'auth/token/obtain/';
@@ -238,9 +243,9 @@ module.exports = React.createClass({
     }
 
     this.setState({resource: resource, params: params, page: 1, showresult: true}, this.handlePageChange(1));
-    },
-    updateData: function (resource, params, crud) {
-      var availablePage = params.page;
+  },
+    updateData: function (event, crud) {
+      var availablePage = parseInt(this.state.params.page);
       if (crud === 'create') {
         if (this.state.count % this.state.page_size) {
           availablePage = Math.ceil(this.state.count / this.state.page_size);
@@ -249,10 +254,10 @@ module.exports = React.createClass({
         }
       } else if (crud === 'delete' ) {
         if (this.state.count % this.state.page_size === 1) {
-          availablePage = params.page -1;
+          availablePage = parseInt(this.state.params.page) - 1;
         }
       }
-      if (availablePage !== params.page) {
+      if (availablePage !== parseInt(this.state.params.page)) {
         this.handlePageChange(availablePage);
       } else {
         this.loadData(availablePage);
@@ -356,8 +361,8 @@ module.exports = React.createClass({
               <LoadForm releases={this.state.releases} roles={this.state.roles} release_spinning={this.state.release_spinning} role_spinning={this.state.role_spinning} params={this.state.params} resource={this.state.resource} onSubmit={this.handleFormSubmit} inputChange={this.handleInputChange}/>
             </Col>
             <Col md={9} className="rightCol">
-              <TableToolbar showresult={this.state.showresult} releases={this.state.releases} roles={this.state.roles} contacts={this.state.contacts} resource={this.state.resource} params={this.state.params}
-                onUpdate={this.updateData} selectedContact={this.state.selectedContact} clearSelectedContact={this.clearSelectedContact}/>
+              <TableToolbar showresult={this.state.showresult} releases={this.state.releases} roles={this.state.roles} contacts={this.state.contacts}
+                selectedContact={this.state.selectedContact} clearSelectedContact={this.clearSelectedContact}/>
               <div id="browser-wrapper">
                 <i className={browserSpinnerClass}></i>
                 <Browser id="erer" data={this.state.data} showresult={this.state.showresult} onSelectContact={this.onSelectContact}/>

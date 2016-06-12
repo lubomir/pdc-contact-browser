@@ -38,12 +38,11 @@ module.exports = React.createClass({
       }
     })
     .done(function (response) {
-      _this.props.onUpdate(_this.props.resource, _this.props.params, 'delete');
+      $('.wrapper').trigger('dataUpdated', ['delete']);
       _this.props.clearSelectedContact();
       _this.setState({ 'delMessageType': 'success', 'delMessage': 'Record is deleted successfully on server.'});
     })
     .fail(function (response) {
-      _this.props.onUpdate(_this.props.resource, _this.props.params);
       _this.setState({ 'delMessageType': 'danger', 'delMessage': response.responseText });
     })
     .always(function() {
@@ -73,13 +72,11 @@ module.exports = React.createClass({
               <Tab.Content animation className={this.state.panelClass}>
                 <Tab.Pane eventKey="new">
                   <NewPane releases={this.props.releases} roles={this.props.roles} 
-                  contacts={this.props.contacts} resource={this.props.resource} 
-                  params={this.props.params} onUpdate={this.props.onUpdate} hidePanel={this.hidePanel} />
+                  contacts={this.props.contacts} hidePanel={this.hidePanel} />
                 </Tab.Pane>
                 <Tab.Pane eventKey="edit">
                   <EditPane releases={this.props.releases} roles={this.props.roles}
-                    contacts={this.props.contacts} resource={this.props.resource}
-                    params={this.props.params} onUpdate={this.props.onUpdate} hidePanel={this.hidePanel} />
+                    contacts={this.props.contacts} hidePanel={this.hidePanel} />
                 </Tab.Pane>
                 <Tab.Pane eventKey="delete">
                   <Alert bsStyle={this.state.delMessageType}>
