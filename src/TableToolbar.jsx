@@ -38,7 +38,7 @@ module.exports = React.createClass({
       }
     })
     .done(function (response) {
-      $('.wrapper').trigger('dataUpdated', ['delete']);
+      $('.wrapper').trigger({ 'type': 'dataUpdated', 'crud': 'delete' });
       _this.props.clearSelectedContact();
       _this.setState({ 'delMessageType': 'success', 'delMessage': 'Record is deleted successfully on server.'});
     })

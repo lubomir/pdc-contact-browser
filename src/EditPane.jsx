@@ -146,7 +146,7 @@ module.exports = React.createClass({
       }
     })
     .done(function (response) {
-      $('.wrapper').trigger('dataUpdated', ['update']);
+      $('.wrapper').trigger({ 'type': 'dataUpdated', 'crud': 'update' });
       _this.displayMessage('Record is updated successfully on server side.', 3000);
     })
     .fail(function (response) {
