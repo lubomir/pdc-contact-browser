@@ -146,7 +146,7 @@ module.exports = React.createClass({
       }
     })
     .done(function (response) {
-      _this.props.onUpdate(_this.props.resource, _this.props.params, 'update');
+      $('.wrapper').trigger('dataUpdated', ['update']);
       _this.displayMessage('Record is updated successfully on server side.', 3000);
     })
     .fail(function (response) {
