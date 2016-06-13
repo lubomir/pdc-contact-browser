@@ -117,7 +117,7 @@ module.exports = React.createClass({
       }
     })
     .done(function (response) {
-      $('.wrapper').trigger('dataUpdated', ['create']);
+      $('.wrapper').trigger({ 'type': 'dataUpdated', 'crud': 'create' });
       _this.displayMessage('Record is created successfully on server.', 3000);
       _this.restoreDefaults();
     })

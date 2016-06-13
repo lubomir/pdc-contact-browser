@@ -16,16 +16,16 @@ var $ = require('jquery');
 
 var performSearch = function(nextState) {
   if (nextState.location.action === 'POP') {
-    $('.wrapper').trigger('historyChange', [ nextState.location ]);
+    $('.wrapper').trigger({ 'type': 'historyChange', 'location': nextState.location });
   }
 };
 var returntoInitState = function() {
-  $('.wrapper').trigger('historyChange', [{ 'query': { 'page': 0 }}]);
+  $('.wrapper').trigger({ 'type': 'historyChange', 'location': { 'query': { 'page': 0 }} });
 };
 var routeChange = function(prevState, nextState) {
   if ((prevState.location.action === 'PUSH' && nextState.location.action === 'POP')
     || (prevState.location.search !== nextState.location.search) && nextState.location.action === 'POP') {
-      $('.wrapper').trigger('historyChange', [ nextState.location ]);
+      $('.wrapper').trigger({ 'type': 'historyChange', 'location': nextState.location });
   }
 };
 
