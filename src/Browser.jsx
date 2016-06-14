@@ -54,10 +54,10 @@ module.exports = React.createClass({
       return (
         <BootstrapTable height={"auto"} data={contacts} striped={true} hover={true} condensed={true} selectRow={selectRowProp}>
           <TableHeaderColumn dataField="url" isKey={true} autoValue={true} hidden={true}>Url</TableHeaderColumn>
-          <TableHeaderColumn dataField="component" dataAlign="center" width="80">Component</TableHeaderColumn>
-          <TableHeaderColumn dataField="release" dataAlign="center" width="60">Release</TableHeaderColumn>
-          <TableHeaderColumn dataField="contact" dataAlign="center" width="180">Contact</TableHeaderColumn>
-          <TableHeaderColumn dataField="role" dataAlign="center" width="60">Contact Role</TableHeaderColumn>
+          <TableHeaderColumn dataField="component" width="80">Component</TableHeaderColumn>
+          <TableHeaderColumn dataField="release" width="60">Release</TableHeaderColumn>
+          <TableHeaderColumn dataField="contact" width="180">Contact</TableHeaderColumn>
+          <TableHeaderColumn dataField="role" width="60">Contact Role</TableHeaderColumn>
         </BootstrapTable>
       );
     }
