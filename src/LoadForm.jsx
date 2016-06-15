@@ -97,7 +97,7 @@ module.exports = React.createClass({
             </div>
             <div className="form-group">
               <Col md={12}>
-                <Button type="submit" className="btn-primary">Search</Button>
+                <Button type="submit" className="btn-primary" id="search-contacts">Search</Button>
               </Col>
             </div>
           </form>

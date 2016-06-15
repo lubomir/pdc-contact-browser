@@ -156,3 +156,39 @@ h2 button {
 input[name=field_release]~.Select-menu-outer {
   width: 220px;
 }
+#search-contacts {
+  height: 36px;
+  margin-top: 10px;
+  width: 142px;
+}
+.pagination .active a {
+  background-color: #0088ce!important;
+  color:#fff!important;
+}
+.react-bs-table-container table th {
+  border-bottom: none;
+}
+.form-control::-moz-placeholder {
+  font-style: normal;
+}
+.form-control::-webkit-input-placeholder {
+  font-style: normal!important;
+}
+.pagination > .active > a, .pagination > .active > a:focus, .pagination > .active > a:hover{
+  background-color: #0088ce!important;
+  background-image:none;
+  background-repeat: no-repeat;
+  border-color: #0088ce;
+  box-shadow:none!important;
+  color: #fff;
+}
+table > caption + thead > tr:first-child > td, .table > caption + thead > tr:first-child > th, .table > thead:first-child > tr:first-child > td, .table > thead:first-child > tr:first-child > th {
+  border-bottom: medium none!important;
+  border-top: 0 none;
+}
+.table-bordered>tbody>tr>td, .table-bordered>thead>tr>th {
+  border: 0;
+}
+.table>tbody>tr>td {
+  border-top: 0;
+}
