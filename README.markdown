@@ -14,16 +14,10 @@ Set up your server url in src/serversetting.json, then enjoy.
 Install `npm` (probably from your package manager).
 
     $ npm install
-    $ make
-    # Builds a JS bundle ...
-    # Open index.html in browser for testing
+    $ npm start 
+    # Listening at http://localhost:3000/
+    # Open http://localhost:3000/ in browser for testing
     
-    $ make watch
-    # Automatically rebuild the bundle
-
-    $ make dist
-    # create single file version in dist/index.html
-
 If you did not install node module globally, you need to add
 `node_modules/.bin` to your `PATH`.
 
