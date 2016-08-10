@@ -1,6 +1,6 @@
 Name:           pdc-contact-browser
-Version:        0.1.0
-Release:        1
+Version:        1.0.0
+Release:        2%{?dist}
 Summary:        Web UI for pdc's contact
 Group:          Development/Libraries
 License:        MIT
@@ -28,5 +28,12 @@ cp index.html %{buildroot}/var/www/html/%{name}
 /var/www/html/%{name}
 
 %changelog
+* Wed May 11 2016 Chuang Zhang <chuzhang@redhat.com> 1.0.0-2
+- Bump Release to 2%{?dist}
+
+* Wed May 11 2016 Chuang Zhang <chuzhang@redhat.com> 1.0.0-1
+- Add New and Delete feature for contact browser. (chuzhang@redhat.com)
+- Allow linking to particular result page in contact browser. (chuzhang@redhat.com)
+
 * Wed Mar 9 2016 Chuang Zhang <chuzhang@redhat.com> 0.1.0-1
 - init spec for pdc contact browser
