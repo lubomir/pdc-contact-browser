@@ -30,7 +30,9 @@ module.exports = React.createClass({
           'contact': '',
           'role': '',
           'enableContactSelect': false,
-          'enableRoleSelect': false
+          'enableRoleSelect': false,
+          'showMessage': false,
+          'message': ''
         });
       } else {
         _this.setState({
@@ -39,7 +41,9 @@ module.exports = React.createClass({
           'contact': data.contact,
           'role': data.role,
           'enableContactSelect': true,
-          'enableRoleSelect': true
+          'enableRoleSelect': true,
+          'showMessage': false,
+          'message': ''
         });
         _this.targetUrl =  data.url;
       }
