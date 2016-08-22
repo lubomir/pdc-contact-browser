@@ -153,9 +153,6 @@ h2 button {
 #table-toolbar .btnsRow {
   margin-top: 20px;
 }
-input[name=field_release]~.Select-menu-outer {
-  width: 220px;
-}
 #search-contacts {
   height: 36px;
   margin-top: 10px;
@@ -191,4 +188,18 @@ table > caption + thead > tr:first-child > td, .table > caption + thead > tr:fir
 }
 .table>tbody>tr>td {
   border-top: 0;
+}
+.fieldsRow>:nth-child(1) {
+  padding-right: 10px;
+}
+.fieldsRow>:nth-child(2) {
+  padding-left: 0px;
+  padding-right: 0px;
+}
+.fieldsRow>:nth-child(3) {
+  padding-left: 10px;
+  padding-right: 0px;
+}
+.fieldsRow>:nth-child(4) {
+  padding-left: 10px;
 }

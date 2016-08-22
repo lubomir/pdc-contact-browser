@@ -174,7 +174,7 @@ module.exports = React.createClass({
 
     return (
       <div>
-        <Row>
+        <Row className="fieldsRow">
           <Col md={3}>
             <FormControl type="text" value={this.state.cmp} placeholder="Component" onChange={this.updateCmp} />
           </Col>
