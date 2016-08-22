@@ -18,6 +18,12 @@ module.exports = React.createClass({
       'enableSaveBtn': true
     };
   },
+  componentDidMount: function(){
+    var _this = this;
+    $('#table-toolbar').on('newContact', function(event) {
+      _this.restoreDefaults();
+    });
+  },
   updateCmp: function(event) {
     this.setState({ 'cmp': event.target.value.trim() });
   },
@@ -31,7 +37,7 @@ module.exports = React.createClass({
     this.setState({ 'role': value.trim() });
   },
   restoreDefaults: function() {
-    this.setState({ 'cmp': '', 'release': '', 'contact': '', 'role': '' });
+    this.setState({ 'cmp': '', 'release': '', 'contact': '', 'role': '', 'showMessage': false, 'message': '' });
   },
   closePane: function() {
     this.restoreDefaults();
