@@ -200,7 +200,7 @@ module.exports = React.createClass({
 
     return (
       <div>
-        <Row>
+        <Row className="fieldsRow">
           <Col md={3}>
             <FormControl ref="cmp" type="text" placeholder="Component" value={this.state.cmp} disabled="true"/>
           </Col>
