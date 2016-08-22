@@ -18,6 +18,9 @@ module.exports = React.createClass({
   },
   selectActionButton: function(eventKey) {
     this.setState({ 'activeKey': eventKey, 'panelClass': 'show-panel' });
+    if (eventKey === 'new') {
+      $('#table-toolbar').trigger('newContact');
+    }
   },
   hidePanel: function() {
     this.setState({ 'activeKey': '', 'panelClass': '' });
