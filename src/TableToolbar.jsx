@@ -3,7 +3,7 @@
 var React = require('react');
 var NewPane = require('./NewPane.jsx');
 var EditPane = require('./EditPane.jsx');
-import {Row, Col, Tab, Nav, NavItem, Glyphicon, Alert} from 'react-bootstrap';
+import { Row, Col, Tab, Nav, NavItem, Glyphicon, Alert, ButtonGroup, Button } from 'react-bootstrap';
 var $ = require('jquery');
 
 module.exports = React.createClass({
@@ -12,14 +12,31 @@ module.exports = React.createClass({
       'activeKey': '',
       'panelClass': '',
       'delMessageType': 'info',
-      'delMessage': '',
+      'delMessage': 'Please select one contact firstly.',
+      'showDelBtn': false,
       'enableDelBtn': true
     };
+  },
+  componentDidMount: function(){
+    var _this = this;
+    $('.rightCol').on('selectContact', function(event, data) {
+      if (data === '') {
+        _this.setState({ 'delMessageType': 'info', 'delMessage': 'Please select one contact firstly.', 'showDelBtn': false });
+      } else {
+        _this.setState({ 'delMessageType': 'danger', 'delMessage': 'Are you sure to delete the selected contact?', 'showDelBtn': true });
+      }
+    });
   },
   selectActionButton: function(eventKey) {
     this.setState({ 'activeKey': eventKey, 'panelClass': 'show-panel' });
     if (eventKey === 'new') {
       $('#table-toolbar').trigger('newContact');
+    } else if (eventKey === 'delete') {
+      if (this.props.selectedContact.url) {
+        this.setState({ 'delMessageType': 'danger', 'delMessage': 'Are you sure to delete the selected contact?', 'showDelBtn': true });
+      } else {
+        this.setState({ 'delMessageType': 'info', 'delMessage': 'Please select one contact firstly.', 'showDelBtn': false });
+      }
     }
   },
   hidePanel: function() {
@@ -27,12 +44,8 @@ module.exports = React.createClass({
   },
   deleteContact: function() {
     var _this = this;
-    if (!this.props.selectedContact.url) {
-      this.setState({ 'delMessageType': 'danger', 'delMessage': 'Please select one contact firstly.' });
-      return;
-    } else {
-      this.setState({ 'enableDelBtn': false });
-    }
+    this.setState({ 'enableDelBtn': false });
+
     $.ajax({
       url: this.props.selectedContact.url,
       method: 'DELETE',
@@ -43,7 +56,7 @@ module.exports = React.createClass({
     .done(function (response) {
       $('.wrapper').trigger({ 'type': 'dataUpdated', 'crud': 'delete' });
       _this.props.clearSelectedContact();
-      _this.setState({ 'delMessageType': 'success', 'delMessage': 'Record is deleted successfully on server.'});
+      _this.setState({ 'delMessageType': 'success', 'delMessage': 'Record is deleted successfully on server.', 'showDelBtn': false });
     })
     .fail(function (response) {
       _this.setState({ 'delMessageType': 'danger', 'delMessage': response.responseText });
@@ -68,7 +81,7 @@ module.exports = React.createClass({
                 <NavItem eventKey="edit">
                   <Glyphicon glyph="pencil" /> Edit
                 </NavItem>
-                <NavItem eventKey="delete" onClick={this.deleteContact} disabled={!this.state.enableDelBtn}>
+                <NavItem eventKey="delete">
                   <Glyphicon glyph="trash" /> Delete
                 </NavItem>
               </Nav>
@@ -82,9 +95,22 @@ module.exports = React.createClass({
                     contacts={this.props.contacts} hidePanel={this.hidePanel} />
                 </Tab.Pane>
                 <Tab.Pane eventKey="delete">
-                  <Alert bsStyle={this.state.delMessageType}>
-                    {this.state.delMessage}
-                  </Alert>
+                <Row>
+                  <Col md={10}>
+                    <Alert bsStyle={this.state.delMessageType}>
+                      {this.state.delMessage}
+                    </Alert>
+                  </Col>
+                  <Col md={2}>
+                    { this.state.showDelBtn ?
+                      <ButtonGroup bsSize="small" justified>
+                        <Button href="#" bsStyle="success" onClick={this.deleteContact} disabled={!this.state.enableDelBtn}>Yes</Button>
+                        <Button href="#" onClick={this.hidePanel}>No</Button>
+                      </ButtonGroup>
+                      : null
+                    }
+                  </Col>
+                  </Row>
                 </Tab.Pane>
               </Tab.Content>
             </Col>
