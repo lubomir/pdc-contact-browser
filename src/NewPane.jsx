@@ -20,7 +20,7 @@ module.exports = React.createClass({
   },
   componentDidMount: function(){
     var _this = this;
-    $('#table-toolbar').on('newContact', function(event) {
+    $('#table-toolbar').on('toggleTab', function(event) {
       _this.restoreDefaults();
     });
   },
