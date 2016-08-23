@@ -14,7 +14,9 @@ module.exports = React.createClass({
       'cmp': '',
       'release': '',
       'contact': '',
+      'initContact': '',
       'role': '',
+      'initRole': '',
       'enableContactSelect': false,
       'enableRoleSelect': false,
       'enableSaveBtn': false
@@ -39,7 +41,9 @@ module.exports = React.createClass({
           'cmp': data.component,
           'release': data.release,
           'contact': data.contact,
+          'initContact': data.contact,
           'role': data.role,
+          'initRole': data.role,
           'enableContactSelect': true,
           'enableRoleSelect': true,
           'showMessage': false,
@@ -47,6 +51,25 @@ module.exports = React.createClass({
         });
         _this.targetUrl =  data.url;
       }
+    });
+    $('#table-toolbar').on('toggleTab', function(event, tab) {
+      if (tab !== 'edit') {
+        _this.restoreInitValues();
+      }
+    });
+
+    $('.wrapper').on('dataUpdated', function(event) {
+      if (event.crud === 'delete' && _this.state.contact !== '') {
+        _this.restoreDefaults();
+      }
+    });
+  },
+  restoreInitValues: function() {
+    this.setState({
+      'showMessage': false,
+      'message': '',
+      'contact': this.state.initContact,
+      'role': this.state.initRole
     });
   },
   componentWillUnmount: function () {
@@ -60,17 +83,21 @@ module.exports = React.createClass({
   },
   restoreDefaults: function() {
     this.setState({
+      'showMessage': false,
+      'message': '',
       'cmp': '',
       'release': '',
       'contact': '',
+      'initContact': '',
       'role': '',
+      'initRole': '',
       'enableContactSelect': false,
       'enableRoleSelect': false,
       'enableSaveBtn': false
     });
   },
   closePane: function() {
-    this.restoreDefaults();
+    this.restoreInitValues();
     this.props.hidePanel();
   },
   displayMessage: function(msg, duration) {

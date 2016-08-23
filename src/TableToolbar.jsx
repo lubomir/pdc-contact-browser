@@ -29,9 +29,8 @@ module.exports = React.createClass({
   },
   selectActionButton: function(eventKey) {
     this.setState({ 'activeKey': eventKey, 'panelClass': 'show-panel' });
-    if (eventKey === 'new') {
-      $('#table-toolbar').trigger('newContact');
-    } else if (eventKey === 'delete') {
+    $('#table-toolbar').trigger('toggleTab', [eventKey]);
+    if (eventKey === 'delete') {
       if (this.props.selectedContact.url) {
         this.setState({ 'delMessageType': 'danger', 'delMessage': 'Are you sure to delete the selected contact?', 'showDelBtn': true });
       } else {
