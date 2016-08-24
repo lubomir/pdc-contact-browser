@@ -105,7 +105,10 @@ module.exports = React.createClass({
     if (duration) {
       this.setState({ 'message': msg, 'showMessage': true, 'messageType': 'success' }, function() {
         setTimeout(function() {
-          _this.setState({ 'messageType': 'danger', 'showMessage': false });
+          _this.setState({ 'showMessage': false });
+          setTimeout(function() {
+            _this.setState({ 'messageType': 'danger'});
+          }, 151);
         }, duration);
       });
     } else {
