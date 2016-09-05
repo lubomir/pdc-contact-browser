@@ -66,7 +66,8 @@ module.exports = React.createClass({
       root: root,
       resource: resource,
       contacts: {},
-      selectedContact: {}
+      selectedContact: {},
+      lastmodified: null
     };
   },
   componentDidMount: function() {
@@ -265,17 +266,29 @@ module.exports = React.createClass({
     },
     loadData: function (page) {
       var _this = this;
+      var ifmodifiedsince = null;
       this.setState({busy: true});
       var data = $.extend({}, this.state.params);
       if (page) {
         data.page = page;
       }
+      if (this.state.lastmodified) {
+        ifmodifiedsince = this.state.lastmodified;
+      }
+      else {
+        ifmodifiedsince = null;
+      }
+      console.log(ifmodifiedsince)
       $.ajax({
         url: this.state.url + this.state.resource,
         dataType: "json",
-        data: data
+        data: data,
+        headers: { 'If-Modified-Since': ifmodifiedsince, 'Cache-Control': 'no-cache' }
       })
-        .done(function (response) {
+      
+        //.done(function (response) {
+        .done(function(response, textStatus, jqXHR) { 
+          console.log(textStatus);
           _this.setState({
             busy: false,
             showresult: true,
@@ -283,7 +296,8 @@ module.exports = React.createClass({
             count: response.count,
             page: parseInt(_this.state.params.page),
             next: response.next,
-            prev: response.prev}, function() {
+            prev: response.prev,
+            lastmodified: jqXHR.getResponseHeader('Last-Modified')}, function() {
               var params = _this.state.params;
               if (params['component']) {
                 $('#component').val(params['component']);
