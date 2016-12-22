@@ -6,7 +6,7 @@ contacts for components.
 
 # Usage
 
-Set up your server url in src/serversetting.json, then enjoy.
+Set up your server url in serversetting.json, then enjoy.
 
 
 # Development
