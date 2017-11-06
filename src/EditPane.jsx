@@ -151,7 +151,7 @@ module.exports = React.createClass({
     };
     var data = {};
     data['role'] = row['role'];
-    if (row['release'] == 'global') {
+    if (row['release'] == 'N/A') {
       data['component'] = row['component'];
     }
     else {
