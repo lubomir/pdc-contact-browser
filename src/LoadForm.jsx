@@ -11,6 +11,16 @@ var classNames = require('classnames');
 var Select = require('react-select');
 var $ = require('jquery');
 
+var common = require('./common.jsx');
+
+// Prepends item to array only if it's not present yet.
+function prependOption(array, value, label) {
+  var item = {value: value, label: label};
+  if ($.inArray(item, array) === -1) {
+    array.unshift(item);
+  }
+}
+
 module.exports = React.createClass({
   handleSubmit: function (e) {
     e.preventDefault();
@@ -21,39 +31,39 @@ module.exports = React.createClass({
     };
     this.props.onSubmit(data);
   },
+
   handleInputChange: function () {
     this.props.inputChange();
   },
+
   render: function () {
-    var rel = this.props.releases;
-    if ($.inArray("global", rel) < 0) {
-      rel.unshift("global");
-    }
-    if ($.inArray("all", rel) < 0) {
-      rel.unshift("all");
-    }
-    var releaseList = rel.map(function(release) {
+    var releaseList = this.props.releases.map(function(release) {
       return { 'value': release, 'label': release };
     });
-    var r = this.props.roles;
-    if ($.inArray("all", r) < 0) {
-      r.unshift("all");
-    }
-    var roleList = r.map(function(role) {
+    prependOption(releaseList, common.values.releaseAllRelease, common.labels.releaseAllRelease);
+    prependOption(releaseList, common.values.releaseAllGlobal, common.labels.releaseAllGlobal);
+    prependOption(releaseList, common.values.releaseAll, common.labels.releaseAll);
+
+    var roleList = this.props.roles.map(function(role) {
       return { 'value': role, 'label': role };
     });
+    prependOption(roleList, common.values.rolesAll, common.labels.rolesAll);
+
     var component = (this.props.params['component']) ? this.props.params['component']:"";
     $("#component").attr("value", component);
-    var initRelease = '';
-    if (this.props.resource == "global-component-contacts/") {
-      initRelease = 'global';
-    }
-    else if (this.props.params['release']) {
+
+    var initRelease = common.values.releaseAll;
+    if (this.props.resource == common.resources.globalComponentContacts) {
+      initRelease = common.values.releaseAllGlobal
+    } else if (this.props.params['release']) {
       initRelease = this.props.params['release'];
-    } else {
-      initRelease = 'all';
+    } else if (this.props.resource == common.resources.releaseComponentContacts) {
+      initRelease = common.values.releaseAllRelease;
     }
-    var initRole = (this.props.params['role']) ? this.props.params['role'] : 'all';
+
+    var initRole = (this.props.params['role'])
+          ? this.props.params['role']
+          : common.values.rolesAll;
     var release_spinning = this.props.release_spinning;
     var role_spinning =  this.props.role_spinning;
 

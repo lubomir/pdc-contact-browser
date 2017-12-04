@@ -8,6 +8,8 @@ var BootstrapTable = ReactBSTable.BootstrapTable;
 var TableHeaderColumn = ReactBSTable.TableHeaderColumn;
 var $ = require('jquery');
 
+var common = require('./common.jsx');
+
 module.exports = React.createClass({
     render: function () {
       var _this = this;
@@ -36,12 +38,12 @@ module.exports = React.createClass({
         if (c.component.release) {
           release = c.component.release;
           component = c.component.name;
-          url = url + "release-component-contacts/" + c.id + "/";
+          url = url + common.resources.releaseComponentContacts + c.id + "/";
         }
         else {
           release = "N/A";
           component = c.component;
-          url = url + 'global-component-contacts/' + c.id + "/";
+          url = url + common.resources.globalComponentContacts + c.id + "/";
         }
         if (c.contact.username) {
           contact = c.contact.username + " <" + c.contact.email + ">";

@@ -14,6 +14,8 @@ var appHistory = useRouterHistory(createHashHistory)({ queryKey: false });
 var App = require('./app.jsx');
 var $ = require('jquery');
 
+var common = require('./common.jsx');
+
 var performSearch = function(nextState) {
   if (nextState.location.action === 'POP') {
     $('.wrapper').trigger({ 'type': 'historyChange', 'location': nextState.location });
@@ -32,8 +34,9 @@ var routeChange = function(prevState, nextState) {
 ReactDOM.render(
   <Router history={appHistory}>
     <Route path="/" component={ App } />
-    <Route path="/release-component-contacts/" component={ App } onChange={routeChange} onEnter={performSearch} onLeave={returntoInitState}/>
-    <Route path="/global-component-contacts/" component={ App } onChange={routeChange} onEnter={performSearch} onLeave={returntoInitState}/>
+    <Route path={"/" + common.resources.releaseComponentContacts} component={ App } onChange={routeChange} onEnter={performSearch} onLeave={returntoInitState}/>
+    <Route path={"/" + common.resources.globalComponentContacts} component={ App } onChange={routeChange} onEnter={performSearch} onLeave={returntoInitState}/>
+    <Route path={"/" + common.resources.allComponentContacts} component={ App } onChange={routeChange} onEnter={performSearch} onLeave={returntoInitState}/>
   </Router>,
   document.getElementById('app')
 );

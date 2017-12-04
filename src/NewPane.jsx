@@ -5,6 +5,8 @@ var Select = require('react-select');
 import {Row, Col, Tab, Nav, NavItem, FormGroup, ControlLabel, FormControl, ButtonGroup, Button, Glyphicon, Alert, Fade} from 'react-bootstrap';
 var $ = require('jquery');
 
+var common = require('./common.jsx');
+
 module.exports = React.createClass({
   getInitialState: function() {
     return {
@@ -94,11 +96,11 @@ module.exports = React.createClass({
     data["role"] = row["role"];
     if (row["release"] == "global") {
       data["component"] = row["component"];
-      url = url + "global-component-contacts/";
+      url = url + common.resources.globalComponentContacts;
     }
     else {
       data["component"] = {"name": row["component"], "release": row["release"]};
-      url = url + "release-component-contacts/";
+      url = url + common.resources.releaseComponentContacts;
     }
     var arr = row["contact"].split("<");
     var name = arr[0].trim();

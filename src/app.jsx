@@ -8,12 +8,95 @@ var Row = ReactBootstrap.Row;
 var Col = ReactBootstrap.Col;
 var $ = require('jquery');
 
+var common = require('./common.jsx');
 var LoadForm = require('./LoadForm.jsx');
 var TableToolbar = require('./TableToolbar.jsx');
 var Browser = require('./Browser.jsx');
 var Pager = require('./Pager.jsx');
 var NetworkErrorDialog = require('./NetworkErrorDialog.jsx');
 var classNames = require('classnames');
+
+// Makes asynchronous requests to get results from given resources.
+function fetchResults(app, data, resources, results = [], count = 0, showResults = true) {
+  var request_data;
+  // Show results or update only item count.
+  if (showResults) {
+    request_data = data;
+  } else {
+    request_data = Object.assign({}, data);
+    request_data.page = 1;
+    request_data.page_size = 1;
+  }
+
+  $.ajax({
+    url: app.state.url + resources[0],
+    dataType: "json",
+    data: request_data
+  })
+    .done(function (response) {
+      var newResults = (response instanceof Array) ? response : response.results;
+      count += (response instanceof Array) ? newResults.length : response.count;
+
+      if (showResults) {
+        var remaining = app.state.page_size - results.length;
+        results = results.concat(newResults.slice(0, remaining));
+      }
+
+      resources.shift();
+
+      var newState = {
+        busy: resources.length > 0,
+        showresult: true,
+        data: results,
+        count: count,
+        page: parseInt(app.state.params.page),
+      };
+
+      app.setState(newState, function() {
+          var params = app.state.params;
+
+          $('#component').val(params['component'] || '');
+
+          if (params['release']) {
+            $('#release').val(params['release']);
+          } else if (app.state.resource === common.resources.globalComponentContacts) {
+            $('#release').val(common.values.releaseAllGlobal);
+          } else if (app.state.resource === common.resources.releaseComponentContacts) {
+            $('#release').val(common.values.releaseAllRelease);
+          } else {
+            $('#release').val(common.values.releaseAll);
+          }
+
+          $('#role').val(params['role'] || 'all');
+        }
+      );
+
+      if (resources.length > 0) {
+        // Concatenate results from next resource.
+        if (results.length < data.page_size) {
+          var currentPageCount = Math.ceil(count / app.state.page_size);
+          // With paging, it's not possible to request results from an offset,
+          // so first few items from resource can repeat on following page.
+          data.page = Math.max(1, data.page - currentPageCount);
+          fetchResults(app, data, resources, results, count, true);
+        } else {
+          // If there is no need to show rest of the items, do a request
+          // just to get an item count.
+          fetchResults(app, data, resources, results, count, false);
+        }
+      }
+    })
+    .fail(function (xhr, status, err) {
+      if (showResults && xhr.status === 404 && xhr.responseJSON) {
+        // If requested page does not exist, do a request just to get an
+        // item count.
+        fetchResults(app, data, resources, results, count, false);
+      } else {
+        app.displayError(app.state.url + resources[0], 'GET', xhr, status, err);
+        app.refs.errorDialog.open();
+      }
+    });
+}
 
 module.exports = React.createClass({
   getInitialState: function () {
@@ -226,19 +309,22 @@ module.exports = React.createClass({
   handleFormSubmit: function (data) {
     var params = {};
     var resource = null;
-    if (data['release'] == 'global') {
-      resource = 'global-component-contacts/';
+
+    if (data['release'] == common.values.releaseAll) {
+      resource = common.resources.allComponentContacts;
+    } else if (data['release'] == common.values.releaseAllGlobal) {
+      resource = common.resources.globalComponentContacts;
+    } else if (data['release'] == common.values.releaseAllRelease) {
+      resource = common.resources.releaseComponentContacts;
+    } else {
+      resource = common.resources.releaseComponentContacts;
+      params['release'] = data['release'];
     }
-    else {
-      resource = 'release-component-contacts/';
-      if(data['release'] != 'all') {
-        params['release'] = data['release'];
-      }
-    }
+
     if (data['component']) {
       params['component'] = data['component'];
     }
-    if (data['role'] != 'all') {
+    if (data['role'] != common.values.rolesAll) {
       params['role'] = data['role'];
     }
 
@@ -264,51 +350,22 @@ module.exports = React.createClass({
       }
     },
     loadData: function (page) {
-      var _this = this;
-      this.setState({busy: true});
       var data = $.extend({}, this.state.params);
       if (page) {
         data.page = page;
       }
-      $.ajax({
-        url: this.state.url + this.state.resource,
-        dataType: "json",
-        data: data
-      })
-        .done(function (response) {
-          _this.setState({
-            busy: false,
-            showresult: true,
-            data: response.results,
-            count: response.count,
-            page: parseInt(_this.state.params.page),
-            next: response.next,
-            prev: response.prev}, function() {
-              var params = _this.state.params;
-              if (params['component']) {
-                $('#component').val(params['component']);
-              } else {
-                $('#component').val('');
-              }
-              if (params['release']) {
-                $('#release').val(params['release']);
-              } else if (_this.state.resource === 'global-component-contacts/') {
-                $('#release').val('global');
-              } else {
-                $('#release').val('all');
-              }
-              if (params['role']) {
-                $('#role').val(params['role']);
-              } else {
-                $('#role').val('all');
-              }
-            }
-          );
-        })
-        .fail(function (xhr, status, err) {
-          _this.displayError(_this.state.url + _this.state.resource, 'GET', xhr, status, err);
-          _this.refs.errorDialog.open();
-        });
+
+      var newState = {busy: true};
+      if (data.page_size) {
+        newState.page_size = data.page_size;
+      }
+      this.setState(newState);
+
+      var resources = this.state.resource === common.resources.allComponentContacts
+        ? [common.resources.globalComponentContacts, common.resources.releaseComponentContacts]
+        : [this.state.resource];
+
+      fetchResults(this, data, resources);
     },
     handlePageChange: function (p) {
       var _this = this;
