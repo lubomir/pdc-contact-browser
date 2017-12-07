@@ -1,20 +1,22 @@
 'use strict';
 
 module.exports = {
-  // Texts for special release and role filters.
+  // Texts for special filters.
   labels: {
     releaseAll: '[All]',
     releaseAllGlobal: '[All global]',
     releaseAllRelease: '[All with release]',
     rolesAll: '[All]',
+    contactsAll: '[All]',
   },
 
-  // Request values for special release and role filters.
+  // Request values for special filters.
   values: {
     releaseAll: 'all',
     releaseAllGlobal: 'global',
     releaseAllRelease: 'release',
     rolesAll: 'all',
+    contactsAll: 'all',
   },
 
   // Resource names.

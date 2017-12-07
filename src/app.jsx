@@ -102,18 +102,33 @@ module.exports = React.createClass({
   getInitialState: function () {
     var cached_releases = localStorage.getItem("releases");
     var cached_roles = localStorage.getItem("roles");
-    var busy = true;
+    var cached_contacts = localStorage.getItem("contacts");
     var releases = [];
     var roles = [];
-    var release_spinning = false;
-    var role_spinning = false;
-    if (cached_releases && cached_roles) {
-      busy = false;
+    var contacts = {};
+    var release_spinning = true;
+    var role_spinning = true;
+    var contact_spinning = true;
+
+    if (cached_releases) {
       releases = cached_releases.split(",");
-      roles = cached_roles.split(",");
-      release_spinning = true;
-      role_spinning = true;
+      release_spinning = false;
     }
+
+    if (cached_roles) {
+      roles = cached_roles.split(",");
+      role_spinning = false;
+    }
+
+    if (cached_contacts) {
+      try {
+        contacts = JSON.parse(cached_mailinglists);
+        contact_spinning = false;
+      } catch (e) {
+      }
+    }
+
+    var busy = !release_spinning && !role_spinning && !contact_spinning;
     var params = {};
     var resource= null;
     var location = document.location.toString();
@@ -144,11 +159,12 @@ module.exports = React.createClass({
       showresult: false,
       releases: releases,
       roles: roles,
+      contacts: contacts,
       release_spinning: release_spinning,
       role_spinning: role_spinning,
+      contact_spinning: contact_spinning,
       root: root,
       resource: resource,
-      contacts: {},
       selectedContact: {}
     };
   },
@@ -174,18 +190,18 @@ module.exports = React.createClass({
         self.getInitialData(token);
       }
       if (self.state.resource) {
-        var allowed_params = ["component", "release", "role", "page", "page_size"];
+        var allowed_params = ["component", "release", "role", "email", "page", "page_size"];
         var params = Object.keys(self.state.params);
         for (var idx in params) {
           if ($.inArray(params[idx], allowed_params) < 0) {
-            throw "Input params should be in list 'component', 'release', 'role' or 'page'";
+            throw "Input params should be in list 'component', 'release', 'role', 'email' or 'page'";
           }
         }
         var page = 1;
         if (self.state.params['page']) {
           page = self.state.params['page'];
         }
-        self.setState({busy: true, page: Number(page), release_spinning: false, role_spinning: false, showresult: true}, self.loadData);
+        self.setState({busy: true, page: Number(page), release_spinning: false, role_spinning: false, contact_spinning: false, showresult: true}, self.loadData);
       }
     }
 
@@ -279,13 +295,15 @@ module.exports = React.createClass({
                     roles: roles,
                     release_spinning: false,
                     role_spinning: false,
+                    contact_spinning: false,
                     contacts: contacts});
       localStorage.setItem('releases', releases);
       localStorage.setItem('roles', roles);
+      localStorage.setItem('contacts', JSON.stringify(contacts));
     })
     .fail(function(jqxhr, textStatus, error) {
       if (error === 'UNAUTHORIZED') {
-        _this.setState({ busy: true, release_spinning: false, role_spinning: false });
+        _this.setState({ busy: true, release_spinning: false, role_spinning: false, contact_spinning: false });
         _this.getToken(_this.getInitialData);
       } else {
         _this.displayError(_this.errorAddress, 'GET', jqxhr, textStatus, error);
@@ -326,6 +344,9 @@ module.exports = React.createClass({
     }
     if (data['role'] != common.values.rolesAll) {
       params['role'] = data['role'];
+    }
+    if (data['contact'] != common.values.contactsAll) {
+      params['email'] = data['contact'];
     }
 
     this.setState({resource: resource, params: params, page: 1, showresult: true}, this.handlePageChange(1));
@@ -416,7 +437,7 @@ module.exports = React.createClass({
           </Navbar>
           <Row className="layout">
             <Col md={3} className="leftCol">
-              <LoadForm releases={this.state.releases} roles={this.state.roles} release_spinning={this.state.release_spinning} role_spinning={this.state.role_spinning} params={this.state.params} resource={this.state.resource} onSubmit={this.handleFormSubmit} inputChange={this.handleInputChange}/>
+              <LoadForm releases={this.state.releases} roles={this.state.roles} contacts={this.state.contacts} release_spinning={this.state.release_spinning} role_spinning={this.state.role_spinning} contact_spinning={this.state.contact_spinning} params={this.state.params} resource={this.state.resource} onSubmit={this.handleFormSubmit} inputChange={this.handleInputChange}/>
             </Col>
             <Col md={9} className="rightCol">
               <TableToolbar showresult={this.state.showresult} releases={this.state.releases} roles={this.state.roles} contacts={this.state.contacts}

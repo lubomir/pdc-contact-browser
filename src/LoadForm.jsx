@@ -27,7 +27,8 @@ module.exports = React.createClass({
     var data = {
       'component': ReactDOM.findDOMNode(this.refs.component).value.trim(),
       'release': $('input[name="query_release"]').val(),
-      'role': $('input[name="query_role"]').val()
+      'role': $('input[name="query_role"]').val(),
+      'contact': $('input[name="query_contact"]').val(),
     };
     this.props.onSubmit(data);
   },
@@ -49,6 +50,15 @@ module.exports = React.createClass({
     });
     prependOption(roleList, common.values.rolesAll, common.labels.rolesAll);
 
+    // Sorted list of mailing-list and personal e-mails (duplicates removed).
+    var contactList = (this.props.contacts.mail || [])
+          .concat(this.props.contacts.people || [])
+          .map(function(contact) { return contact.email; })
+          .sort()
+          .filter(function(contact, index, list) { return contact !== list[index + 1]; })
+          .map(function(contact) { return { 'value': contact, 'label': contact }; });
+    prependOption(contactList, common.values.contactsAll, common.labels.contactsAll);
+
     var component = (this.props.params['component']) ? this.props.params['component']:"";
     $("#component").attr("value", component);
 
@@ -64,8 +74,14 @@ module.exports = React.createClass({
     var initRole = (this.props.params['role'])
           ? this.props.params['role']
           : common.values.rolesAll;
+
+    var initContact = (this.props.params['email'])
+          ? this.props.params['email']
+          : common.values.contactsAll;
+
     var release_spinning = this.props.release_spinning;
     var role_spinning =  this.props.role_spinning;
+    var contact_spinning =  this.props.contact_spinning;
 
     var releaseSpinClass = classNames({
       'fa': true,
@@ -80,6 +96,13 @@ module.exports = React.createClass({
       'fa-spin': true,
       'loadingSpinner': true,
       'hidden': !role_spinning
+    });
+    var contactSpinClass = classNames({
+      'fa': true,
+      'fa-refresh': true,
+      'fa-spin': true,
+      'loadingSpinner': true,
+      'hidden': !contact_spinning
     });
     return (
       <Row className="loadForm">
@@ -103,6 +126,13 @@ module.exports = React.createClass({
               <Col md={12}>
                 <Select name="query_role" value={initRole} clearable={false} options={roleList}/>
                 <i className={roleSpinClass}></i>
+              </Col>
+            </div>
+            <div className="form-group">
+              <label htmlFor="contact" className="col-md-12">Contact:</label>
+              <Col md={12}>
+                <Select name="query_contact" value={initContact} clearable={false} options={contactList}/>
+                <i className={contactSpinClass}></i>
               </Col>
             </div>
             <div className="form-group">
