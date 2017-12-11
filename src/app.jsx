@@ -13,6 +13,7 @@ var LoadForm = require('./LoadForm.jsx');
 var TableToolbar = require('./TableToolbar.jsx');
 var Browser = require('./Browser.jsx');
 var Pager = require('./Pager.jsx');
+var HeaderLinks = require('./HeaderLinks.jsx');
 var NetworkErrorDialog = require('./NetworkErrorDialog.jsx');
 var classNames = require('classnames');
 
@@ -168,6 +169,7 @@ module.exports = React.createClass({
       selectedContact: {},
       logo: null,
       customStyle: null,
+      links: [],
     };
   },
   componentDidMount: function() {
@@ -182,6 +184,7 @@ module.exports = React.createClass({
       localStorage.setItem('server', data['server']);
       self.state.logo = data['logo'] || null;
       self.state.customStyle = data['customStyle'] || null;
+      self.state.links = data.links;
       self.state.url = data['server'];
       handleData();
     });
@@ -448,6 +451,7 @@ module.exports = React.createClass({
                 Product Definition Center &mdash; Contact Browser
               </Navbar.Brand>
             </Navbar.Header>
+            <HeaderLinks links={this.state.links} />
           </Navbar>
           <div className="container-fluid wrapper">
             <Row className="layout">
