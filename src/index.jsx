@@ -1,6 +1,7 @@
-require('patternfly/dist/css/patternfly.css');
 require('react-bootstrap-table/css/react-bootstrap-table.css');
 require('react-select/dist/react-select.css');
+require('patternfly/dist/css/patternfly.css');
+require('patternfly/dist/css/patternfly-additions.css');
 require('./../css/app.css');
 
 var React = require('react');

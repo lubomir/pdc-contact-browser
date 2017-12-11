@@ -444,15 +444,20 @@ module.exports = React.createClass({
       return (
         <div>
           {style}
-          <Navbar fluid inverse>
+          <nav className="navbar navbar-pf navbar-default">
             <Navbar.Header>
               <Navbar.Brand>
                 {logo}
                 Product Definition Center &mdash; Contact Browser
               </Navbar.Brand>
             </Navbar.Header>
-            <HeaderLinks links={this.state.links} />
-          </Navbar>
+            <div className="navbar-collapse collapse">
+                <HeaderLinks links={this.state.links} />
+                <ul className="nav navbar-nav navbar-primary">
+                    <li><a href="/">Contact Browser</a></li>
+                </ul>
+            </div>
+          </nav>
           <div className="container-fluid wrapper">
             <Row className="layout">
               <Col md={3} className="leftCol">
