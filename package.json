@@ -35,6 +35,7 @@
     "babel-preset-react": "^6.5.0",
     "browserify": "~10.2.4",
     "css-loader": "^0.23.1",
+    "extract-text-webpack-plugin": "^1.0.1",
     "file-loader": "^0.8.5",
     "postcss-loader": "^0.9.1",
     "precss": "^1.4.0",
@@ -42,11 +43,11 @@
     "react-tools": ">=0.13.3",
     "reactify": "~1.1.1",
     "resource-embedder": "~0.2.2",
+    "rimraf": "^2.5.2",
     "style-loader": "^0.13.1",
     "uglify-js": "~>2.6.0",
+    "url-loader": "^0.6.2",
     "webpack": "^1.12.15",
-    "webpack-dev-server": "^1.14.1",
-    "extract-text-webpack-plugin": "^1.0.1",
-    "rimraf": "^2.5.2"
+    "webpack-dev-server": "^1.14.1"
   }
 }
